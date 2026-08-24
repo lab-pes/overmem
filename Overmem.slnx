@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Overmem.Abstractions/Overmem.Abstractions.csproj" />
+    <Project Path="src/Overmem.Application/Overmem.Application.csproj" />
+    <Project Path="src/Overmem.Cli/Overmem.Cli.csproj" />
+    <Project Path="src/Overmem.Extensions.Pes2021/Overmem.Extensions.Pes2021.csproj" />
+    <Project Path="src/Overmem.Hosting/Overmem.Hosting.csproj" />
+    <Project Path="src/Overmem.McpServer/Overmem.McpServer.csproj" />
+    <Project Path="src/Overmem.Runtime/Overmem.Runtime.csproj" />
+    <Project Path="src/Overmem.Search/Overmem.Search.csproj" />
+    <Project Path="src/Overmem.Windows/Overmem.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Overmem.Extensions.Pes2021.Tests/Overmem.Extensions.Pes2021.Tests.csproj" />
+    <Project Path="tests/Overmem.Tests/Overmem.Tests.csproj" />
+    <Project Path="tests/Overmem.TestTarget/Overmem.TestTarget.csproj" />
+  </Folder>
+</Solution>

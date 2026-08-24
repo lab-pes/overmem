@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Overmem.Abstractions\Overmem.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
