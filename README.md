@@ -4,7 +4,7 @@ Overmem is a Windows-only .NET 8 process memory platform focused on headless ope
 
 ## Implementation Specifications
 
-- [PES 2021 competition fixture extraction](docs/pes2021/competition-fixtures/README.md): self-contained requirements, contracts, memory profile, CLI/MCP surface, tests, evidence gates, examples, and phased implementation plan. This capability is planned; follow the status inside the specification rather than treating it as already implemented.
+- [PES 2021 competition fixture extraction](docs/pes2021/competition-fixtures/README.md): self-contained requirements, contracts, memory profile, CLI/MCP surface, tests, evidence gates, examples, and phased implementation plan. Packages **P0–P6 and P8 are implemented in code**; only the live-process evidence gated by **P7** remains pending. See the plan and the [`Implementation Report`](docs/pes2021/competition-fixtures/implementation-report.md) for the current state.
 
 The project already covers a meaningful subset of Cheat Engine style workflows for process attachment, region/module inspection, typed reads and writes, pointer resolution, pattern scanning, freezing, exact value search, memory tables, and host runtime diagnostics. It does not yet cover the full Cheat Engine feature set.
 
@@ -12,7 +12,7 @@ The project already covers a meaningful subset of Cheat Engine style workflows f
 
 Ready now:
 
-- Process attach and detach by PID or process name.
+- Process attach and detach by PID or process name. Attachments now carry `processStartedAtUtc` for the calendar session cache.
 - Module listing and virtual memory region enumeration.
 - Typed memory read and write for `Bytes`, `Int32`, `Int64`, `Float`, `Double`, `Utf8String`, and `Utf16String`.
 - Pointer-chain resolution from an absolute base address.
@@ -24,6 +24,7 @@ Ready now:
 - Unknown initial value search sessions: capture all aligned baseline values and narrow with `Changed`, `Unchanged`, `Increased`, `Decreased`, `Between`, etc.
 - JSON-backed memory tables with on-demand refresh.
 - Host runtime diagnostics for active attachments and recent operations.
+- PES 2021 calendar fixture extraction: profile-driven contract types, pure parser, block reader (default 1024 records), region-scoped anchor finder, in-memory session cache keyed by `(attachmentId, processId, processStartedAtUtc?, profileId, profileVersion, profileSha256)`, team/competition catalog loader with composite-key resolution, atomic JSON output for Sider/Lua consumers. CLI: `pes2021-find-fixture-anchor` and `pes2021-extract-competition-fixtures`. MCP: `pes2021_find_fixture_anchor` and `pes2021_extract_competition_fixtures`. The wire payload is `pes2021.competition-fixtures.v1` (`status: FIXTURES_ONLY`, `camelCase` properties, `SCREAMING_SNAKE_CASE` enums). Live-process evidence (P7) is still pending.
 - Headless execution through a local CLI.
 - Host integration through a local stdio MCP server.
 
@@ -33,6 +34,7 @@ Partially ready:
 - Pointer discovery now supports optional base-module filtering and candidate revalidation, but pointer maps and large-scale ranking/revalidation workflows are not implemented yet.
 - Value-search sessions are in-memory host state only. They are not persisted.
 - Memory-table refresh is on demand only. There is no background refresh daemon.
+- PES 2021 fixture extraction runs against the in-memory synthetic generator and a fake gateway in CI; live dumps from `PES2021.exe` and the cross-restart A/B benchmarks are still pending. The legacy `DumpDateAsync`/`CompareDatesAsync`/`CalendarSummaryAsync` paths now use the new block reader by default and retain the legacy per-record path only behind an internal `UseLegacyPerRecordPath` toggle reserved for the A/B benchmark in P7.
 
 Not implemented yet:
 
@@ -50,16 +52,18 @@ Not implemented yet:
 
 ## Solution Layout
 
-- `src/Overmem.Abstractions`: contracts shared by every layer.
-- `src/Overmem.Application`: application-facing orchestration and validation.
+- `src/Overmem.Abstractions`: contracts shared by every layer. `AttachmentInfo` now exposes `ProcessStartedAtUtc`.
+- `src/Overmem.Application`: application-facing orchestration and validation. `ProcessMemoryApplicationService` exposes the underlying `IProcessMemoryGateway` for read-only consumers like the PES 2021 fixture reader.
 - `src/Overmem.Runtime`: host-level runtime services such as attachment session tracking and recent-operation journals.
 - `src/Overmem.Search`: exact value search sessions and refinement logic.
 - `src/Overmem.Hosting`: shared dependency injection wiring for local hosts.
 - `src/Overmem.Cli`: one-shot command-line host.
 - `src/Overmem.Windows`: Win32-backed implementation of the process memory gateway.
 - `src/Overmem.McpServer`: local stdio MCP host exposing the headless workflows.
+- `src/Overmem.Extensions.Pes2021`: PES 2021 Master League agenda + fixtures. The new `Fixtures/` namespace contains the contract types, profile loader, pure parser, block reader, anchor finder, catalog loader, name resolver, session cache, diagnostics collector, and the orchestrating `Pes2021CompetitionFixtureService`.
 - `tests/Overmem.TestTarget`: controlled process used by integration tests.
 - `tests/Overmem.Tests`: unit and integration suite.
+- `tests/Overmem.Extensions.Pes2021.Tests`: agenda service tests plus the new contract, parser, block-reader, anchor finder, catalog, cache, diagnostics and fixture service tests.
 
 ## Implemented Capability Surface
 
@@ -247,6 +251,11 @@ Memory-table tools:
 - `save_memory_table`
 - `refresh_memory_table`
 
+PES 2021 fixture tools (read-only, see [`docs/pes2021/competition-fixtures`](docs/pes2021/competition-fixtures/)):
+
+- `pes2021_find_fixture_anchor` — discover the calendar anchor for a `(competitionId, teamId[, teamLiga])` pair.
+- `pes2021_extract_competition_fixtures` — produce a `pes2021.competition-fixtures.v1` FIXTURES_ONLY payload for one competition.
+
 ### MCP Workflow Example
 
 Typical workflow for a long-lived agent:
@@ -257,13 +266,15 @@ Typical workflow for a long-lived agent:
 4. If needed, freeze a resolved address with one of the `freeze_value_*` tools.
 5. Inspect host state with `list_active_attachments`, `list_recent_operations`, `list_frozen_values`, or `list_value_search_sessions`.
 6. Persist or refresh tables with `load_memory_table`, `save_memory_table`, and `refresh_memory_table`.
-7. End the session with `detach_process` and optionally `close_value_search_session`.
+7. (Optional) Run the PES 2021 fixture flow with `pes2021_find_fixture_anchor` followed by `pes2021_extract_competition_fixtures`. The result is a read-only JSON payload (`status: FIXTURES_ONLY`) that downstream Lua/Sider modules can consume.
+8. End the session with `detach_process` and optionally `close_value_search_session`.
 
 ### MCP Operational Notes
 
 - Long-lived workflows are best done through MCP because the host process retains in-memory state.
 - Value-search sessions are lost when the MCP host stops.
 - Active freezes are also host-local runtime state.
+- The PES 2021 calendar session cache lives only in the host process; it is invalidated on detach and rebuilt on the next call.
 - The server is local and Windows-only.
 
 ## Constraints And Non-Goals
@@ -364,7 +375,7 @@ Suggested flow:
 1. Attach to `PES2021.exe` with the existing `attach_process` tool.
 2. Run `pes2021_agenda_guide` to confirm the calendar references and known offsets.
 3. Run `pes2021_find_calendar_base` if you need the calendar anchor resolved from a visible date or season anchor.
-4. Use `pes2021_dump_calendar_date` or `pes2021_calendar_summary` to inspect fixtures and schedule-like agenda data.
+4. Use `pes2021_dump_calendar_date` or `pes2021_calendar_summary` to inspect fixtures and schedule-like agenda data. Both now go through the new block reader (default 1024 records per call).
 5. Use `pes2021_find_secondary_calendar_base_by_date` when a date exists outside the main array and you need to resolve the real `secondary_calendar` base from a raw day-header hit.
 6. Use `pes2021_dump_secondary_calendar_day` to inspect the resolved `DayEntry`, including header events, item indices, and `count`.
 7. Use `pes2021_scan_runtime_day_index_clusters` when the UI still shows a visible line or stop-day that is not explained by the save-side structures alone.
@@ -375,6 +386,17 @@ Suggested flow:
 12. Use `pes2021_classify_runtime_day_variant` when you want a provisional subtype label for the selected day, derived from the secondary-calendar day shape plus the focused runtime-family scan. Treat this as heuristic output and verify against the returned reasons.
 13. Use the lower-level secondary-calendar candidate tools when the date-based resolution is still not enough and you need to probe broader agenda structures.
 14. Use `pes2021_inventory_annual_events` when you want the year-level list of special days first and only then decide which ones deserve deeper runtime analysis.
+15. Use `pes2021_find_fixture_anchor` to locate the calendar anchor without absolute addresses. The call requires `--competition-id` and `--team-id`; `--team-liga` and a profile path are optional.
+16. Use `pes2021_extract_competition_fixtures` to produce a `pes2021.competition-fixtures.v1` payload (`status: FIXTURES_ONLY`). Pass `--output-file <path>` to persist the payload atomically; the file is written via `.tmp` + rename so external consumers (Sider/Lua) never observe a partial file.
+
+#### PES 2021 Operational Notes
+
+- The block reader and anchor finder are read-only; they never call `WriteAsync`. The test fake gateway throws on any write attempt as an architectural guard for G6.
+- The session cache is keyed by `(attachmentId, processId, processStartedAtUtc?, profileId, profileVersion, profileSha256)`. A PES restart that changes the process start time or the PID invalidates the entry automatically.
+- `pes2021-extract-competition-fixtures` accepts at most one of `--calendar-base-address` and `--competition-block-base-address`. Combining both is rejected with `PES2021_INPUT_INVALID`.
+- `teamId` and `teamLiga` are accepted as any `u16` except `0xFFFF`; the legacy `IsStrongRecord` ceiling of 5000 is gone.
+- When the MCP Server (`Overmem.McpServer.exe`) is running, `dotnet build Overmem.slnx` may fail with `MSB3026` (file locked). Either stop the running MCP host or use the focused command `dotnet test tests/Overmem.Extensions.Pes2021.Tests/Overmem.Extensions.Pes2021.Tests.csproj --no-build` for the test cycle.
+- The live-process evidence gated by P7 (baseline 17 with 380 games, restart A/B, second non-Brazilian competition, benchmark legacy/512/1024) is still pending. Until P7 closes, the gates G6 and G7 from [`verification.md`](docs/pes2021/competition-fixtures/verification.md) are not satisfied.
 
 #### Next Analysis Directions
 

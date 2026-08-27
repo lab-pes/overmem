@@ -1,6 +1,7 @@
 using Overmem.Abstractions.Memory;
 using Overmem.Abstractions.Processes;
 using Overmem.Application;
+using Overmem.Extensions.Pes2021.Fixtures;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Globalization;
@@ -11,6 +12,14 @@ namespace Overmem.Extensions.Pes2021;
 public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryService)
 {
     private const int MaxPlausibleCompetitionCode = 0x3FFF;
+
+    /// <summary>
+    /// When <c>true</c>, the dump/summary/compare paths use the legacy per-record read
+    /// implementation. The default is <c>false</c>, so the new block reader is used; the
+    /// toggle exists for the A/B benchmark in P7. The CLI exposes it only as an internal
+    /// flag and never advertises it on the help text.
+    /// </summary>
+    public static bool UseLegacyPerRecordPath { get; set; }
     private readonly Lazy<IReadOnlyDictionary<int, string>> _competitionMap = new(
         () => Pes2021AgendaProfile.LoadCompetitionMap());
     private readonly ConcurrentDictionary<AttachmentId, Pes2021CalendarBaseResult> _baseCache = new();
@@ -82,6 +91,97 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
         CancellationToken cancellationToken = default)
     {
         var resolvedBase = await ResolveBaseAddressAsync(attachmentId, baseAddress, cancellationToken);
+        if (UseLegacyPerRecordPath)
+        {
+            return await DumpDateLegacyAsync(attachmentId, year, month, day, resolvedBase, maxRecs, cancellationToken);
+        }
+
+        var profile = Pes2021FixtureProfileDefaults.GetOrLoad();
+        var regions = await memoryService.ListRegionsAsync(attachmentId, cancellationToken);
+        var targetKey = FormatDateKey(year, month, day);
+        var matches = new List<Pes2021CalendarRecordSnapshot>();
+        var competitionCounts = new Dictionary<int, CompetitionBuilder>();
+
+        await foreach (var block in Pes2021CalendarBlockReader.ReadCalendarRecordBlocksAsync(
+            memoryService,
+            attachmentId,
+            resolvedBase,
+            maxRecs,
+            profile,
+            regions,
+            cancellationToken))
+        {
+            if (block.FailureReason is not null && block.RecordCount == 0)
+            {
+                break;
+            }
+
+            var results = Pes2021CalendarRecordParser.ParseBlock(block.Bytes, block.BaseAddress, block.StartRecordIndex, profile);
+            foreach (var parseResult in results)
+            {
+                if (!parseResult.Success || parseResult.Record is null)
+                {
+                    continue;
+                }
+
+                var parsed = parseResult.Record;
+                if (FormatDateKey(parsed.Year, parsed.Month, parsed.Day) != targetKey)
+                {
+                    continue;
+                }
+
+                var snapshot = ToSnapshot(parsed);
+                matches.Add(snapshot);
+                var builder = GetOrCreateBuilder(competitionCounts, snapshot.CompetitionCode, snapshot.CompetitionName);
+                builder.MatchCount++;
+                builder.Rounds.Add(snapshot.Round);
+            }
+
+            if (block.FailureReason is not null
+                && block.FailureReason != FixtureRejectionReasons.OutsideRegion)
+            {
+                break;
+            }
+        }
+
+        var competitions = competitionCounts.Values
+            .Select(builder => new Pes2021CompetitionDateSummary(
+                builder.CompetitionCode,
+                builder.CompetitionName,
+                builder.MatchCount,
+                FormatRounds(builder.Rounds)))
+            .OrderBy(item => item.CompetitionCode)
+            .ToArray();
+
+        var orderedMatches = matches
+            .OrderBy(match => match.CompetitionCode)
+            .ThenBy(match => match.Round)
+            .ThenBy(match => match.Index)
+            .ToArray();
+
+        return new Pes2021CalendarDateReport(
+            resolvedBase,
+            year,
+            month,
+            day,
+            competitions.Length,
+            orderedMatches.Length,
+            "main-backed",
+            "visible",
+            "unknown",
+            competitions,
+            orderedMatches);
+    }
+
+    private async Task<Pes2021CalendarDateReport> DumpDateLegacyAsync(
+        AttachmentId attachmentId,
+        int year,
+        int month,
+        int day,
+        ulong resolvedBase,
+        int maxRecs,
+        CancellationToken cancellationToken)
+    {
         var targetKey = FormatDateKey(year, month, day);
         var matches = new List<Pes2021CalendarRecordSnapshot>();
         var competitionCounts = new Dictionary<int, CompetitionBuilder>();
@@ -149,8 +249,65 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
         CancellationToken cancellationToken = default)
     {
         var resolvedBase = await ResolveBaseAddressAsync(attachmentId, baseAddress, cancellationToken);
-        var firstDate = await DumpDateAsync(attachmentId, firstYear, firstMonth, firstDay, resolvedBase, maxRecs, cancellationToken);
-        var secondDate = await DumpDateAsync(attachmentId, secondYear, secondMonth, secondDay, resolvedBase, maxRecs, cancellationToken);
+        if (UseLegacyPerRecordPath)
+        {
+            return await CompareDatesLegacyAsync(attachmentId, firstYear, firstMonth, firstDay, secondYear, secondMonth, secondDay, resolvedBase, maxRecs, cancellationToken);
+        }
+
+        var profile = Pes2021FixtureProfileDefaults.GetOrLoad();
+        var regions = await memoryService.ListRegionsAsync(attachmentId, cancellationToken);
+        var firstKey = FormatDateKey(firstYear, firstMonth, firstDay);
+        var secondKey = FormatDateKey(secondYear, secondMonth, secondDay);
+
+        var firstBuilder = new Dictionary<int, CompetitionBuilder>();
+        var secondBuilder = new Dictionary<int, CompetitionBuilder>();
+        var firstMatches = new List<Pes2021CalendarRecordSnapshot>();
+        var secondMatches = new List<Pes2021CalendarRecordSnapshot>();
+
+        await foreach (var block in Pes2021CalendarBlockReader.ReadCalendarRecordBlocksAsync(
+            memoryService,
+            attachmentId,
+            resolvedBase,
+            maxRecs,
+            profile,
+            regions,
+            cancellationToken))
+        {
+            var results = Pes2021CalendarRecordParser.ParseBlock(block.Bytes, block.BaseAddress, block.StartRecordIndex, profile);
+            foreach (var parseResult in results)
+            {
+                if (!parseResult.Success || parseResult.Record is null)
+                {
+                    continue;
+                }
+
+                var snapshot = ToSnapshot(parseResult.Record);
+                var key = FormatDateKey(snapshot.Year, snapshot.Month, snapshot.Day);
+                if (key == firstKey)
+                {
+                    firstMatches.Add(snapshot);
+                    var builder = GetOrCreateBuilder(firstBuilder, snapshot.CompetitionCode, snapshot.CompetitionName);
+                    builder.MatchCount++;
+                    builder.Rounds.Add(snapshot.Round);
+                }
+                else if (key == secondKey)
+                {
+                    secondMatches.Add(snapshot);
+                    var builder = GetOrCreateBuilder(secondBuilder, snapshot.CompetitionCode, snapshot.CompetitionName);
+                    builder.MatchCount++;
+                    builder.Rounds.Add(snapshot.Round);
+                }
+            }
+
+            if (block.FailureReason is not null
+                && block.FailureReason != FixtureRejectionReasons.OutsideRegion)
+            {
+                break;
+            }
+        }
+
+        var firstDate = BuildDateReport(resolvedBase, firstYear, firstMonth, firstDay, firstBuilder, firstMatches);
+        var secondDate = BuildDateReport(resolvedBase, secondYear, secondMonth, secondDay, secondBuilder, secondMatches);
 
         var comparisons = firstDate.Competitions
             .Concat(secondDate.Competitions)
@@ -179,6 +336,85 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
             comparisons);
     }
 
+    private async Task<Pes2021CalendarDateComparisonReport> CompareDatesLegacyAsync(
+        AttachmentId attachmentId,
+        int firstYear,
+        int firstMonth,
+        int firstDay,
+        int secondYear,
+        int secondMonth,
+        int secondDay,
+        ulong resolvedBase,
+        int maxRecs,
+        CancellationToken cancellationToken)
+    {
+        var firstDate = await DumpDateLegacyAsync(attachmentId, firstYear, firstMonth, firstDay, resolvedBase, maxRecs, cancellationToken);
+        var secondDate = await DumpDateLegacyAsync(attachmentId, secondYear, secondMonth, secondDay, resolvedBase, maxRecs, cancellationToken);
+
+        var comparisons = firstDate.Competitions
+            .Concat(secondDate.Competitions)
+            .GroupBy(item => item.CompetitionCode)
+            .Select(group =>
+            {
+                var first = firstDate.Competitions.FirstOrDefault(item => item.CompetitionCode == group.Key);
+                var second = secondDate.Competitions.FirstOrDefault(item => item.CompetitionCode == group.Key);
+                var competitionName = ResolveComparisonCompetitionName(first, second);
+
+                return new Pes2021CompetitionDateComparison(
+                    group.Key,
+                    competitionName,
+                    first?.MatchCount ?? 0,
+                    first?.Rounds ?? string.Empty,
+                    second?.MatchCount ?? 0,
+                    second?.Rounds ?? string.Empty);
+            })
+            .OrderBy(item => item.CompetitionCode)
+            .ToArray();
+
+        return new Pes2021CalendarDateComparisonReport(
+            resolvedBase,
+            firstDate,
+            secondDate,
+            comparisons);
+    }
+
+    private static Pes2021CalendarDateReport BuildDateReport(
+        ulong baseAddress,
+        int year,
+        int month,
+        int day,
+        Dictionary<int, CompetitionBuilder> builders,
+        List<Pes2021CalendarRecordSnapshot> matches)
+    {
+        var competitions = builders.Values
+            .Select(builder => new Pes2021CompetitionDateSummary(
+                builder.CompetitionCode,
+                builder.CompetitionName,
+                builder.MatchCount,
+                FormatRounds(builder.Rounds)))
+            .OrderBy(item => item.CompetitionCode)
+            .ToArray();
+
+        var orderedMatches = matches
+            .OrderBy(match => match.CompetitionCode)
+            .ThenBy(match => match.Round)
+            .ThenBy(match => match.Index)
+            .ToArray();
+
+        return new Pes2021CalendarDateReport(
+            baseAddress,
+            year,
+            month,
+            day,
+            competitions.Length,
+            orderedMatches.Length,
+            "main-backed",
+            "visible",
+            "unknown",
+            competitions,
+            orderedMatches);
+    }
+
     public async Task<Pes2021CalendarSummary> CalendarSummaryAsync(
         AttachmentId attachmentId,
         ulong? baseAddress = null,
@@ -186,6 +422,69 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
         CancellationToken cancellationToken = default)
     {
         var resolvedBase = await ResolveBaseAddressAsync(attachmentId, baseAddress, cancellationToken);
+        if (UseLegacyPerRecordPath)
+        {
+            return await CalendarSummaryLegacyAsync(attachmentId, resolvedBase, maxRecs, cancellationToken);
+        }
+
+        var profile = Pes2021FixtureProfileDefaults.GetOrLoad();
+        var regions = await memoryService.ListRegionsAsync(attachmentId, cancellationToken);
+        var dates = new Dictionary<string, SummaryBuilder>(StringComparer.Ordinal);
+        var totalMatches = 0;
+
+        await foreach (var block in Pes2021CalendarBlockReader.ReadCalendarRecordBlocksAsync(
+            memoryService,
+            attachmentId,
+            resolvedBase,
+            maxRecs,
+            profile,
+            regions,
+            cancellationToken))
+        {
+            var results = Pes2021CalendarRecordParser.ParseBlock(block.Bytes, block.BaseAddress, block.StartRecordIndex, profile);
+            foreach (var parseResult in results)
+            {
+                if (!parseResult.Success || parseResult.Record is null)
+                {
+                    continue;
+                }
+
+                var parsed = parseResult.Record;
+                totalMatches++;
+                var dateKey = FormatDateKey(parsed.Year, parsed.Month, parsed.Day);
+                var builder = GetOrCreateSummaryBuilder(dates, dateKey, parsed.Year, parsed.Month, parsed.Day);
+                builder.MatchCount++;
+                builder.Competitions.Add(parsed.CompetitionId.Value);
+            }
+
+            if (block.FailureReason is not null
+                && block.FailureReason != FixtureRejectionReasons.OutsideRegion)
+            {
+                break;
+            }
+        }
+
+        var entries = dates
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => new Pes2021CalendarSummaryEntry(
+                pair.Value.Date,
+                pair.Value.MatchCount,
+                pair.Value.Competitions.Count))
+            .ToArray();
+
+        return new Pes2021CalendarSummary(
+            resolvedBase,
+            entries.Length,
+            totalMatches,
+            entries);
+    }
+
+    private async Task<Pes2021CalendarSummary> CalendarSummaryLegacyAsync(
+        AttachmentId attachmentId,
+        ulong resolvedBase,
+        int maxRecs,
+        CancellationToken cancellationToken)
+    {
         var dates = new Dictionary<string, SummaryBuilder>(StringComparer.Ordinal);
         var totalMatches = 0;
 
@@ -1881,6 +2180,44 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
 
         return dayIndex;
     }
+
+    private static Pes2021CalendarRecordSnapshot ToSnapshot(RawCalendarRecord parsed)
+    {
+        var competitionName = GetStaticCompetitionName(parsed.CompetitionId.Value);
+        var homeId = parsed.Home.TeamId;
+        var homeLiga = parsed.Home.TeamLiga;
+        var awayId = parsed.Away.TeamId;
+        var awayLiga = parsed.Away.TeamLiga;
+        var homeScore = parsed.HomeScoreRaw;
+        var awayScore = parsed.AwayScoreRaw;
+
+        return new Pes2021CalendarRecordSnapshot(
+            parsed.RecordIndex,
+            parsed.Address,
+            parsed.CompetitionId.Value,
+            competitionName,
+            parsed.Round,
+            parsed.Year,
+            parsed.Month,
+            parsed.Day,
+            homeId,
+            homeLiga,
+            awayId,
+            awayLiga,
+            homeScore,
+            awayScore,
+            homeId == 65535 || awayId == 65535,
+            BuildEventId(parsed.RecordIndex, parsed.CompetitionId.Value, parsed.Year, parsed.Month, parsed.Day, parsed.Round, homeId, awayId, homeLiga));
+    }
+
+    private static string GetStaticCompetitionName(int competitionCode)
+    {
+        var map = _staticCompetitionMap.Value;
+        return map.TryGetValue(competitionCode, out var name) ? name : "DESCONHECIDA";
+    }
+
+    private static readonly Lazy<IReadOnlyDictionary<int, string>> _staticCompetitionMap = new(
+        () => Pes2021AgendaProfile.LoadCompetitionMap());
 
     private static string FormatRounds(HashSet<int> rounds)
     {

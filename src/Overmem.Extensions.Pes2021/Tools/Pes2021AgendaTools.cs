@@ -1,12 +1,15 @@
 using ModelContextProtocol.Server;
 using Overmem.Abstractions.Processes;
 using Overmem.Extensions.Pes2021;
+using Overmem.Extensions.Pes2021.Fixtures;
 using System.ComponentModel;
 
 namespace Overmem.Extensions.Pes2021.Tools;
 
 [McpServerToolType]
-public sealed class Pes2021AgendaTools(Pes2021AgendaService agendaService)
+public sealed class Pes2021AgendaTools(
+    Pes2021AgendaService agendaService,
+    Pes2021CompetitionFixtureService fixtureService)
 {
     [McpServerTool(Name = "pes2021_agenda_guide"), Description("Read the PES 2021 Master League CT and return the agenda references, offsets, search priorities, and recommended commands.")]
     public Task<Pes2021AgendaGuide> AgendaGuide(
@@ -294,4 +297,74 @@ public sealed class Pes2021AgendaTools(Pes2021AgendaService agendaService)
             calendarBaseAddress,
             secondaryBaseAddress,
             cancellationToken);
+
+    [McpServerTool(Name = "pes2021_find_fixture_anchor"), Description("Discover the PES 2021 calendar anchor for a (competitionId, teamId[, teamLiga]) pair using the profile-driven region filter and confidence scoring.")]
+    public async Task<FixtureAnchorResult> FindFixtureAnchor(
+        [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("Competition ID to search for. Must not be 0xFFFF.")] int competitionId,
+        [Description("Team ID that must appear on the home or away side of the candidate record.")] int teamId,
+        [Description("Optional teamLiga to enforce a composite TeamKey match.")] int? teamLiga = null,
+        [Description("Optional path to a pes2021-fixture-profile JSON. Defaults to the built-in profile when omitted.")] string? profilePath = null,
+        [Description("Optional inclusive scan start address.")] ulong? scanStartAddress = null,
+        [Description("Optional inclusive scan stop address.")] ulong? scanStopAddress = null,
+        [Description("Records per block read. Defaults to the profile default.")] int? blockRecords = null,
+        [Description("Maximum bytes to scan while discovering the anchor.")] ulong? maxScanBytes = null,
+        CancellationToken cancellationToken = default)
+    {
+        var profile = string.IsNullOrWhiteSpace(profilePath)
+            ? Pes2021FixtureProfileDefaults.GetOrLoad()
+            : Pes2021FixtureProfileLoader.LoadFromFile(profilePath);
+        var identity = ResolveProcessIdentity(new AttachmentId(attachmentId));
+        return await fixtureService.FindFixtureAnchorAsync(
+            new AttachmentId(attachmentId),
+            identity,
+            profile,
+            new CompetitionId((ushort)competitionId),
+            (ushort)teamId,
+            teamLiga.HasValue ? (ushort)teamLiga.Value : (ushort?)null,
+            cancellationToken);
+    }
+
+    [McpServerTool(Name = "pes2021_extract_competition_fixtures"), Description("Extract every fixture of a PES 2021 competition. The output is a v1 FIXTURES_ONLY payload that can be persisted atomically by the caller.")]
+    public async Task<CompetitionFixtureExtractionResult> ExtractCompetitionFixtures(
+        [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("Competition ID to extract. Must not be 0xFFFF.")] int competitionId,
+        [Description("Optional team ID used to discover the anchor when no address is provided.")] int? teamId = null,
+        [Description("Optional teamLiga used to refine the anchor search.")] int? teamLiga = null,
+        [Description("Optional full calendar array base address.")] ulong? calendarBaseAddress = null,
+        [Description("Optional competition block base address.")] ulong? competitionBlockBaseAddress = null,
+        [Description("Optional anchor address to validate before reuse.")] ulong? anchorAddress = null,
+        [Description("Optional profile path.")] string? profilePath = null,
+        [Description("Optional competition map CSV path.")] string? competitionMapPath = null,
+        [Description("Optional team map CSV path.")] string? teamMapPath = null,
+        [Description("Records per block read. Defaults to the profile default.")] int? blockRecords = null,
+        [Description("Hard cap on records inspected. Defaults to the profile maximum.")] int? recordLimit = null,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new CompetitionFixtureExtractionRequest(
+            CompetitionId: new CompetitionId((ushort)competitionId),
+            TeamId: teamId.HasValue ? (ushort)teamId.Value : (ushort?)null,
+            TeamLiga: teamLiga.HasValue ? (ushort)teamLiga.Value : (ushort?)null,
+            CalendarArrayBaseAddress: calendarBaseAddress,
+            CompetitionBlockBaseAddress: competitionBlockBaseAddress,
+            AnchorAddress: anchorAddress,
+            ProfilePath: profilePath,
+            CompetitionMapPath: competitionMapPath,
+            TeamMapPath: teamMapPath,
+            BlockRecords: blockRecords,
+            RecordLimit: recordLimit);
+        var identity = ResolveProcessIdentity(new AttachmentId(attachmentId));
+        return await fixtureService.ExtractCompetitionFixturesAsync(
+            new AttachmentId(attachmentId),
+            identity,
+            request,
+            cancellationToken);
+    }
+
+    private static ProcessInstanceIdentity ResolveProcessIdentity(AttachmentId attachmentId)
+        => new(
+            AttachmentId: attachmentId,
+            ProcessId: 0,
+            ProcessStartedAtUtc: null,
+            ProcessName: "PES2021");
 }

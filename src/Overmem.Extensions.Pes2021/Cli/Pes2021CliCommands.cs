@@ -142,3 +142,30 @@ public sealed record Pes2021ClassifyRuntimeDayVariantCliCommand(
     int MinHitCount,
     int ClusterGap,
     int PreviewBytes) : CliCommand;
+
+public sealed record Pes2021FindFixtureAnchorCliCommand(
+    ProcessSelector Selector,
+    int CompetitionId,
+    int TeamId,
+    int? TeamLiga,
+    string? ProfilePath,
+    ulong? ScanStartAddress,
+    ulong? ScanStopAddress,
+    int? BlockRecords,
+    ulong? MaxScanBytes,
+    string? OutputFile) : CliCommand;
+
+public sealed record Pes2021ExtractCompetitionFixturesCliCommand(
+    ProcessSelector Selector,
+    int CompetitionId,
+    int? TeamId,
+    int? TeamLiga,
+    ulong? CalendarBaseAddress,
+    ulong? CompetitionBlockBaseAddress,
+    ulong? AnchorAddress,
+    string? ProfileFile,
+    string? CompetitionMapFile,
+    string? TeamMapFile,
+    int? BlockRecords,
+    int? RecordLimit,
+    string? OutputFile) : CliCommand;

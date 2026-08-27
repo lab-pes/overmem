@@ -36,7 +36,8 @@ public sealed class WindowsProcessMemoryGateway : IProcessMemoryGateway, IDispos
             AttachmentId.New(),
             process.Id,
             process.ProcessName,
-            GetArchitecture(handle));
+            GetArchitecture(handle),
+            TryGetStartTimeUtc(process));
 
         var attachedProcess = new AttachedProcess(process, handle, attachment);
         if (!_attachments.TryAdd(attachment.AttachmentId, attachedProcess))
@@ -238,6 +239,18 @@ public sealed class WindowsProcessMemoryGateway : IProcessMemoryGateway, IDispos
         var candidates = Process.GetProcessesByName(selector.ProcessName!);
         return candidates.FirstOrDefault()
             ?? throw new InvalidOperationException($"Process '{selector.ProcessName}' was not found.");
+    }
+
+    private static DateTimeOffset? TryGetStartTimeUtc(Process process)
+    {
+        try
+        {
+            return process.StartTime.ToUniversalTime();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static ProcessArchitecture GetArchitecture(SafeProcessHandle handle)

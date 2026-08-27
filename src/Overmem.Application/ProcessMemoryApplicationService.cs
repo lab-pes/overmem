@@ -20,6 +20,13 @@ public sealed class ProcessMemoryApplicationService
     private readonly IOperationJournal _operationJournal;
     private readonly IAttachmentSessionRegistry _sessionRegistry;
 
+    /// <summary>
+    /// The underlying memory gateway. Exposed for components that need direct access to the
+    /// narrow reader (the PES 2021 fixture reader is one of them). Consumers must never
+    /// call <c>WriteAsync</c> through this handle.
+    /// </summary>
+    public IProcessMemoryGateway Gateway => _gateway;
+
     public ProcessMemoryApplicationService(IProcessMemoryGateway gateway, IProcessFreezeCoordinator freezeCoordinator)
         : this(
             gateway,

@@ -4,4 +4,5 @@ public sealed record AttachmentInfo(
     AttachmentId AttachmentId,
     int ProcessId,
     string ProcessName,
-    ProcessArchitecture Architecture);
+    ProcessArchitecture Architecture,
+    DateTimeOffset? ProcessStartedAtUtc = null);

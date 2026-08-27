@@ -4,6 +4,7 @@ using ModelContextProtocol;
 using ModelContextProtocol.Server;
 using Overmem.Application;
 using Overmem.Extensions.Pes2021;
+using Overmem.Extensions.Pes2021.Fixtures;
 using Overmem.Extensions.Pes2021.Tools;
 using Overmem.McpServer.Tools;
 
@@ -36,7 +37,7 @@ public static class OvermemServiceCollectionExtensions
             .WithTools<RuntimeTools>()
             .WithTools<SearchTools>()
             .WithTools<TableTools>()
-            .WithTools<Pes2021AgendaTools>();
+            .WithTools<Pes2021AgendaTools>(Pes2021FixtureJson.Options);
 
         return services;
     }

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Overmem.Abstractions.Extensions;
+using Overmem.Extensions.Pes2021.Fixtures;
 
 namespace Overmem.Extensions.Pes2021;
 
@@ -15,6 +16,8 @@ public sealed class Pes2021Extension : IOvermemExtension
     public IServiceCollection RegisterServices(IServiceCollection services)
     {
         services.AddSingleton<Pes2021AgendaService>();
+        services.AddSingleton<Pes2021CalendarSessionCache>();
+        services.AddSingleton<Pes2021CompetitionFixtureService>();
         return services;
     }
 }
