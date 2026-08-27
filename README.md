@@ -2,6 +2,10 @@
 
 Overmem is a Windows-only .NET 8 process memory platform focused on headless operation. The current repository scope is the backend surface only: shared contracts, application services, a Win32 provider, a one-shot CLI, and a local stdio MCP server. UI work is intentionally out of scope for now.
 
+## Implementation Specifications
+
+- [PES 2021 competition fixture extraction](docs/pes2021/competition-fixtures/README.md): self-contained requirements, contracts, memory profile, CLI/MCP surface, tests, evidence gates, examples, and phased implementation plan. This capability is planned; follow the status inside the specification rather than treating it as already implemented.
+
 The project already covers a meaningful subset of Cheat Engine style workflows for process attachment, region/module inspection, typed reads and writes, pointer resolution, pattern scanning, freezing, exact value search, memory tables, and host runtime diagnostics. It does not yet cover the full Cheat Engine feature set.
 
 ## Status At A Glance

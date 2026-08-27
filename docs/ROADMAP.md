@@ -1,5 +1,9 @@
 # Planos de Evolução do Overmem
 
+## Especificação adicional: partidas por competição no PES 2021
+
+O plano detalhado e autocontido para descoberta de âncora, leitura em blocos, extração `FIXTURES_ONLY`, mapas de patch, cache, diagnóstico e evidência está em [pes2021/competition-fixtures/README.md](pes2021/competition-fixtures/README.md). A implementação deve seguir os gates desse diretório; a presença da especificação não significa que a funcionalidade já foi entregue.
+
 Quatro planos de implementação independentes, ordenados por impacto arquitetural e dependências entre si.
 
 ---

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "pes2021.fixture-acceptance-baseline.v1",
+  "baselineId": "competition-17-2026-08-27",
+  "evidenceStatus": "BASELINE_IMPORTED_PENDING_LIVE_REPRODUCTION",
+  "capturedAtUtc": "2026-08-27T19:35:38Z",
+  "sourceArtifactSha256": "47F9C4F47B885802D82C5CFF766CFD0DC59D43685E872029F5BDA91915E14FC7",
+  "sourcePlanSha256": "930B6B959F5B46DE7FC10DF8D31CDE2F73E563491BFE43077EAD95BA79D4045B",
+  "status": "FIXTURES_ONLY",
+  "competitionId": 17,
+  "recordStride": 596,
+  "recordLimit": 13014,
+  "observedSeasonStartRecordIndex": 12288,
+  "expected": {
+    "fixtureCount": 380,
+    "distinctTeamKeyCount": 20,
+    "roundValues": {
+      "minimum": 0,
+      "maximum": 37,
+      "distinctCount": 38,
+      "fixturesPerRound": 10
+    },
+    "santos": {
+      "teamId": 32784,
+      "teamLiga": 313,
+      "name": "SANTOS",
+      "fixtureCount": 38
+    },
+    "collisionProof": {
+      "teamId": 32768,
+      "teamLiga": 482,
+      "name": "ATHLETICO PARANAENSE"
+    },
+    "unresolvedTeamKeyCountWithExampleMap": 0
+  },
+  "limitations": [
+    "This is a historical acceptance baseline imported into Overmem, not a live result produced by the current implementation.",
+    "Raw 0-0 scores do not distinguish completed draws from future fixtures.",
+    "Absolute addresses from the original process were intentionally not retained as reusable configuration."
+  ]
+}
+
