@@ -42,12 +42,17 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
         int maxResults = 100,
         CancellationToken cancellationToken = default)
     {
+        if (!competitionCode.HasValue)
+        {
+            throw new ArgumentException("competitionCode is required. Specify an explicit competition code.", nameof(competitionCode));
+        }
+
         maxResults = Math.Max(1, maxResults);
         var years = year.HasValue ? [year.Value] : Pes2021AgendaProfile.SeasonAnchorYears;
         var targetMonth = month ?? 2;
         var targetDay = day ?? 1;
         var targetRound = roundValue ?? 1;
-        var targetCompetitionCode = competitionCode ?? 29;
+        var targetCompetitionCode = competitionCode.Value;
         Pes2021CalendarBaseResult? best = null;
 
         foreach (var anchorYear in years)
@@ -2056,8 +2061,8 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
             return cached.NormalizedBaseAddress;
         }
 
-        var result = await FindBaseAsync(attachmentId, cancellationToken: cancellationToken);
-        return result.NormalizedBaseAddress;
+        throw new InvalidOperationException(
+            "Base address was not provided and no cached calendar base was found for this attachment. Specify baseAddress explicitly or discover the calendar base first.");
     }
 
     private async Task<ulong> ResolveSecondaryBaseAddressAsync(
@@ -2106,8 +2111,8 @@ public sealed class Pes2021AgendaService(ProcessMemoryApplicationService memoryS
             return false;
         }
 
-        return record!.HomeId is >= 0 and <= 5000
-            && record.AwayId is >= 0 and <= 5000;
+        return record!.HomeId is >= 0 and < 0xFFFF
+            && record.AwayId is >= 0 and < 0xFFFF;
     }
 
     private string GetCompetitionName(int competitionCode)

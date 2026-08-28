@@ -30,7 +30,7 @@ public sealed class Pes2021AgendaTools(
         [Description("Visible month to search. Defaults to 2 when omitted.")] int? month = null,
         [Description("Visible day to search. Defaults to 1 when omitted.")] int? day = null,
         [Description("Visible round to search. Defaults to 1 when omitted.")] int? roundValue = null,
-        [Description("Competition code used by the date pattern. Defaults to 29 (Brasileirão Série A) when omitted.")] int? competitionCode = null,
+        [Description("Competition code used by the date pattern. Required.")] int? competitionCode = null,
         [Description("Optional module name to constrain the pattern scan.")] string? moduleName = null,
         [Description("Maximum pattern matches to consider per search pass.")] int maxResults = 100,
         CancellationToken cancellationToken = default)

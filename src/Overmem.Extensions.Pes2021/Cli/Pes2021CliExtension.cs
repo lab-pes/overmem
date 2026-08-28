@@ -357,7 +357,7 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
     public IReadOnlyList<string> GetHelpLines()
     {
         return [
-            "  pes2021-find-calendar-base --pid <id>|--name <process> [--year <yyyy>] [--month <mm>] [--day <dd>] [--round <value>] [--competition-code <code>] [--module-name <module>] [--max-results <count>]",
+            "  pes2021-find-calendar-base --pid <id>|--name <process> --competition-code <code> [--year <yyyy>] [--month <mm>] [--day <dd>] [--round <value>] [--module-name <module>] [--max-results <count>]",
             "  pes2021-dump-calendar-date --pid <id>|--name <process> --year <yyyy> --month <mm> --day <dd> [--base-address <value>] [--max-records <count>]",
             "  pes2021-compare-calendar-dates --pid <id>|--name <process> --first-year <yyyy> --first-month <mm> --first-day <dd> --second-year <yyyy> --second-month <mm> --second-day <dd> [--base-address <value>] [--max-records <count>]",
             "  pes2021-calendar-summary --pid <id>|--name <process> [--base-address <value>] [--max-records <count>]",

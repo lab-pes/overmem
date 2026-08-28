@@ -806,6 +806,44 @@ public sealed class Pes2021AgendaServiceTests
         Assert.Equal("rare_header_marker_candidate", Assert.Single(report.Days, item => item.Date == "2026-02-03").InventoryPatternKey);
     }
 
+    [Fact]
+    public async Task FindBaseAsync_ThrowsWhenCompetitionCodeNotProvided()
+    {
+        var attachmentId = new AttachmentId(Guid.NewGuid());
+        var gateway = new FakeGateway();
+        var service = CreateService(gateway, new FakeFreezeCoordinator());
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(
+            () => service.FindBaseAsync(attachmentId, competitionCode: null));
+        Assert.Contains("competitionCode is required", ex.Message);
+    }
+
+    [Fact]
+    public async Task DumpDateAsync_ThrowsWhenBaseAddressNotProvidedAndNotCached()
+    {
+        var attachmentId = new AttachmentId(Guid.NewGuid());
+        var gateway = new FakeGateway();
+        var service = CreateService(gateway, new FakeFreezeCoordinator());
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.DumpDateAsync(attachmentId, 2026, 4, 18, baseAddress: null));
+        Assert.Contains("Base address was not provided", ex.Message);
+    }
+
+    [Fact]
+    public async Task DumpDateAsync_AcceptsTeamIdsAbove5000()
+    {
+        var attachmentId = new AttachmentId(Guid.NewGuid());
+        var gateway = new FakeGateway();
+        gateway.AddBlock(0x1000, CreateCalendarRecord(17, 1, 2026, 8, 22, 32784, 313, 32768, 482));
+        var service = CreateService(gateway, new FakeFreezeCoordinator());
+
+        var report = await service.DumpDateAsync(attachmentId, 2026, 8, 22, baseAddress: 0x1000, maxRecs: 1);
+        var match = Assert.Single(report.Matches);
+        Assert.Equal(32784, match.HomeId);
+        Assert.Equal(32768, match.AwayId);
+    }
+
     private static Pes2021AgendaService CreateService(IProcessMemoryGateway gateway, IProcessFreezeCoordinator freezeCoordinator)
     {
         var memoryService = new ProcessMemoryApplicationService(gateway, freezeCoordinator, new InMemoryAttachmentSessionRegistry(), new InMemoryOperationJournal(), SystemClock.Instance, Microsoft.Extensions.Logging.Abstractions.NullLogger<ProcessMemoryApplicationService>.Instance);
