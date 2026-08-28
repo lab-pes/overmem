@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Overmem.Abstractions.Cli;
 using Overmem.Abstractions.Processes;
 using Overmem.Application;
+using Overmem.Extensions.Pes2021.ClubRelations;
 using Overmem.Extensions.Pes2021.Fixtures;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -167,6 +168,13 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 CliOptionParser.ParseOptionalInt32(CliOptionParser.GetOptionalOption(options, "block-records")),
                 CliOptionParser.ParseOptionalInt32(CliOptionParser.GetOptionalOption(options, "record-limit")),
                 CliOptionParser.GetOptionalOption(options, "output-file")),
+            "pes2021-scan-club-relations" => new Pes2021ScanClubRelationsCliCommand(
+                CliOptionParser.ParseSelector(options),
+                CliOptionParser.GetRequiredOption(options, "team-catalog"),
+                CliOptionParser.GetRequiredOption(options, "competition-map"),
+                CliOptionParser.GetRequiredOption(options, "output"),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "block-bytes") ?? "4194304"),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "restart-timeout-seconds") ?? "180")),
             _ => null
         };
     }
@@ -350,6 +358,16 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                         BlockRecords: extractCompetitionFixtures.BlockRecords,
                         RecordLimit: extractCompetitionFixtures.RecordLimit),
                     cancellationToken), stdout, extractCompetitionFixtures.OutputFile, cancellationToken),
+            Pes2021ScanClubRelationsCliCommand scanClubRelations => ExecuteWithAttachmentAsync(scanClubRelations.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
+                await services.GetRequiredService<Pes2021ClubRelationsService>().ExecuteAsync(
+                    attachment.AttachmentId,
+                    attachment,
+                    scanClubRelations.TeamCatalogPath,
+                    scanClubRelations.CompetitionMapPath,
+                    scanClubRelations.OutputDirectory,
+                    scanClubRelations.BlockBytes,
+                    scanClubRelations.RestartTimeoutSeconds,
+                    cancellationToken), stdout, cancellationToken),
             _ => null
         };
     }
@@ -371,7 +389,8 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
             "  pes2021-analyze-runtime-day-payload-cluster --pid <id>|--name <process> --year <yyyy> --month <mm> --day <dd> --cluster-ordinal <index> [--start-address <value>] [--stop-address <value>] [--calendar-base-address <value>] [--preferred-strides <s1,s2,...>] [--min-hit-count <count>] [--cluster-gap <bytes>] [--preview-bytes <bytes>] [--ints-before-hit <count>] [--ints-after-hit <count>]",
             "  pes2021-classify-runtime-day-variant --pid <id>|--name <process> --year <yyyy> --month <mm> --day <dd> [--start-address <value>] [--stop-address <value>] [--secondary-base-address <value>] [--calendar-base-address <value>] [--preferred-strides <s1,s2,...>] [--min-hit-count <count>] [--cluster-gap <bytes>] [--preview-bytes <bytes>]",
             "  pes2021-find-fixture-anchor --pid <id>|--name <process> --competition-id <id> --team-id <id> [--team-liga <id>] [--profile-file <path>] [--scan-start-address <value>] [--scan-stop-address <value>] [--block-records <count>] [--max-scan-bytes <bytes>] [--output-file <path>]",
-            "  pes2021-extract-competition-fixtures --pid <id>|--name <process> --competition-id <id> [--team-id <id>] [--team-liga <id>] [--calendar-base-address <value>] [--competition-block-base-address <value>] [--anchor-address <value>] [--profile-file <path>] [--competition-map-file <path>] [--team-map-file <path>] [--block-records <count>] [--record-limit <count>] [--output-file <path>]"
+            "  pes2021-extract-competition-fixtures --pid <id>|--name <process> --competition-id <id> [--team-id <id>] [--team-liga <id>] [--calendar-base-address <value>] [--competition-block-base-address <value>] [--anchor-address <value>] [--profile-file <path>] [--competition-map-file <path>] [--team-map-file <path>] [--block-records <count>] [--record-limit <count>] [--output-file <path>]",
+            "  pes2021-scan-club-relations --pid <id>|--name <process> --team-catalog <path> --competition-map <path> --output <dir> [--block-bytes <bytes>] [--restart-timeout-seconds <seconds>]"
         ];
     }
 
