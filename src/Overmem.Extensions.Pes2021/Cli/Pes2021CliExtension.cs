@@ -174,7 +174,10 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 CliOptionParser.GetRequiredOption(options, "competition-map"),
                 CliOptionParser.GetRequiredOption(options, "output"),
                 CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "block-bytes") ?? "4194304"),
-                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "restart-timeout-seconds") ?? "180")),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "restart-timeout-seconds") ?? "180"),
+                CliOptionParser.GetOptionalOption(options, "mode") ?? "baseline",
+                CliOptionParser.GetOptionalOption(options, "input"),
+                CliOptionParser.ParseInt32List(CliOptionParser.GetOptionalOption(options, "window-sizes") ?? "256,1024,4096")),
             _ => null
         };
     }
@@ -359,17 +362,47 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                         RecordLimit: extractCompetitionFixtures.RecordLimit),
                     cancellationToken), stdout, extractCompetitionFixtures.OutputFile, cancellationToken),
             Pes2021ScanClubRelationsCliCommand scanClubRelations => ExecuteWithAttachmentAsync(scanClubRelations.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
-                await services.GetRequiredService<Pes2021ClubRelationsService>().ExecuteAsync(
-                    attachment.AttachmentId,
-                    attachment,
-                    scanClubRelations.TeamCatalogPath,
-                    scanClubRelations.CompetitionMapPath,
-                    scanClubRelations.OutputDirectory,
-                    scanClubRelations.BlockBytes,
-                    scanClubRelations.RestartTimeoutSeconds,
-                    cancellationToken), stdout, cancellationToken),
+                await DispatchClubRelationsAsync(services, attachment, scanClubRelations, cancellationToken), stdout, cancellationToken),
             _ => null
         };
+    }
+
+    private static async Task<Pes2021ClubScanResult> DispatchClubRelationsAsync(
+        IServiceProvider services,
+        AttachmentInfo attachment,
+        Pes2021ScanClubRelationsCliCommand command,
+        CancellationToken cancellationToken)
+    {
+        var service = services.GetRequiredService<Pes2021ClubRelationsService>();
+        var mode = (command.Mode ?? "baseline").Trim().ToLowerInvariant();
+        if (mode == "layout")
+        {
+            return await service.ExecuteLayoutAsync(
+                attachment.AttachmentId,
+                attachment,
+                command.TeamCatalogPath,
+                command.CompetitionMapPath,
+                command.OutputDirectory,
+                command.InputObservationsPath,
+                command.WindowSizes,
+                command.RestartTimeoutSeconds,
+                cancellationToken);
+        }
+
+        if (mode != "baseline")
+        {
+            throw new ArgumentException($"Unknown mode '{command.Mode}'. Use 'baseline' or 'layout'.");
+        }
+
+        return await service.ExecuteAsync(
+            attachment.AttachmentId,
+            attachment,
+            command.TeamCatalogPath,
+            command.CompetitionMapPath,
+            command.OutputDirectory,
+            command.BlockBytes,
+            command.RestartTimeoutSeconds,
+            cancellationToken);
     }
 
     public IReadOnlyList<string> GetHelpLines()
@@ -390,7 +423,7 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
             "  pes2021-classify-runtime-day-variant --pid <id>|--name <process> --year <yyyy> --month <mm> --day <dd> [--start-address <value>] [--stop-address <value>] [--secondary-base-address <value>] [--calendar-base-address <value>] [--preferred-strides <s1,s2,...>] [--min-hit-count <count>] [--cluster-gap <bytes>] [--preview-bytes <bytes>]",
             "  pes2021-find-fixture-anchor --pid <id>|--name <process> --competition-id <id> --team-id <id> [--team-liga <id>] [--profile-file <path>] [--scan-start-address <value>] [--scan-stop-address <value>] [--block-records <count>] [--max-scan-bytes <bytes>] [--output-file <path>]",
             "  pes2021-extract-competition-fixtures --pid <id>|--name <process> --competition-id <id> [--team-id <id>] [--team-liga <id>] [--calendar-base-address <value>] [--competition-block-base-address <value>] [--anchor-address <value>] [--profile-file <path>] [--competition-map-file <path>] [--team-map-file <path>] [--block-records <count>] [--record-limit <count>] [--output-file <path>]",
-            "  pes2021-scan-club-relations --pid <id>|--name <process> --team-catalog <path> --competition-map <path> --output <dir> [--block-bytes <bytes>] [--restart-timeout-seconds <seconds>]"
+            "  pes2021-scan-club-relations --pid <id>|--name <process> --team-catalog <path> --competition-map <path> --output <dir> [--mode baseline|layout] [--block-bytes <bytes>] [--restart-timeout-seconds <seconds>] [--input <observations.csv>] [--window-sizes <s1,s2,...>]"
         ];
     }
 

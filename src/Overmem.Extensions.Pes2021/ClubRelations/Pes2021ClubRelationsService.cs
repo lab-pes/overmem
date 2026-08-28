@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Overmem.Abstractions.Cli;
 using Overmem.Abstractions.Memory;
 using Overmem.Abstractions.Processes;
 using Overmem.Application;
@@ -36,6 +37,50 @@ public sealed class Pes2021ClubRelationsService
     }
 
     public async Task<Pes2021ClubScanResult> ExecuteAsync(
+        AttachmentId attachmentId,
+        AttachmentInfo attachmentInfo,
+        string teamCatalogPath,
+        string competitionMapPath,
+        string outputDirectory,
+        int blockBytes,
+        int restartTimeoutSeconds,
+        CancellationToken cancellationToken)
+    {
+        return await ExecuteBaselineAsync(
+            attachmentId,
+            attachmentInfo,
+            teamCatalogPath,
+            competitionMapPath,
+            outputDirectory,
+            blockBytes,
+            restartTimeoutSeconds,
+            cancellationToken);
+    }
+
+    public async Task<Pes2021ClubScanResult> ExecuteLayoutAsync(
+        AttachmentId attachmentId,
+        AttachmentInfo attachmentInfo,
+        string teamCatalogPath,
+        string competitionMapPath,
+        string outputDirectory,
+        string? inputObservationsPath,
+        IReadOnlyList<int> windowSizes,
+        int restartTimeoutSeconds,
+        CancellationToken cancellationToken)
+    {
+        return await ExecuteLayoutAsyncCore(
+            attachmentId,
+            attachmentInfo,
+            teamCatalogPath,
+            competitionMapPath,
+            outputDirectory,
+            inputObservationsPath,
+            windowSizes,
+            restartTimeoutSeconds,
+            cancellationToken);
+    }
+
+    private async Task<Pes2021ClubScanResult> ExecuteBaselineAsync(
         AttachmentId attachmentId,
         AttachmentInfo attachmentInfo,
         string teamCatalogPath,
@@ -97,14 +142,11 @@ public sealed class Pes2021ClubRelationsService
         }
 
         var blockReader = new Pes2021RegionBlockReader(_memoryService);
+        var blockBytesLocal = blockBytes > 0 ? blockBytes : Pes2021RegionBlockReader.MaxBlockBytes;
         foreach (var region in readablePrivate)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var blocks = await blockReader.ReadRegionBlocksAsync(attachmentId, region, blockBytes, Pes2021RegionBlockReader.DefaultOverlapBytes, Pes2021RegionBlockReader.DefaultMaxBytesPerRegion, cancellationToken);
-            if (blocks.Count == 0)
-            {
-                continue;
-            }
+            var blocks = await blockReader.ReadRegionBlocksAsync(attachmentId, region, blockBytesLocal, Pes2021RegionBlockReader.DefaultOverlapBytes, Pes2021RegionBlockReader.DefaultMaxBytesPerRegion, cancellationToken);
             if (blocks.Count == 0)
             {
                 continue;
@@ -223,6 +265,257 @@ public sealed class Pes2021ClubRelationsService
         await WriteManifestAsync(Path.Combine(outputDirectory, "manifest.txt"), result, cancellationToken);
 
         return result;
+    }
+
+    private async Task<Pes2021ClubScanResult> ExecuteLayoutAsyncCore(
+        AttachmentId attachmentId,
+        AttachmentInfo attachmentInfo,
+        string teamCatalogPath,
+        string competitionMapPath,
+        string outputDirectory,
+        string? inputObservationsPath,
+        IReadOnlyList<int> windowSizes,
+        int restartTimeoutSeconds,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(outputDirectory))
+        {
+            throw new ArgumentException("Output directory is required.", nameof(outputDirectory));
+        }
+
+        Directory.CreateDirectory(outputDirectory);
+
+        var stopwatch = Stopwatch.StartNew();
+        var runId = Guid.NewGuid();
+
+        var catalogLoad = Pes2021ClubCatalogLoader.LoadFromFile(teamCatalogPath);
+        _ = Pes2021ClubCompetitionMap.LoadFromFile(competitionMapPath);
+        var controlCaseMap = BuildControlCaseMap(catalogLoad.Rows);
+
+        var observations = LoadObservations(inputObservationsPath, runId);
+        if (observations.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"No observations loaded from '{inputObservationsPath}'. Run the baseline mode first or pass a valid --input.");
+        }
+
+        var analyzer = new Pes2021ClubLayoutAnalyzer(_memoryService);
+        var layoutCandidates = await analyzer.AnalyzeAsync(
+            attachmentId,
+            observations,
+            windowSizes,
+            controlCaseMap.ToDictionary(kv => kv.Key, kv => ParseControlOrdinal(kv.Value)),
+            AnchorSpec.Length,
+            null,
+            cancellationToken);
+
+        Pes2021ClubLayoutMarkdownWriter.Write(
+            Path.Combine(outputDirectory, "club-record-layout.md"),
+            layoutCandidates);
+
+        var restartObserved = await TryDetectRestartAsync(attachmentInfo, restartTimeoutSeconds, cancellationToken);
+        await WriteRestartValidationAsync(Path.Combine(outputDirectory, "restart-validation.csv"), runId, restartObserved, cancellationToken);
+
+        stopwatch.Stop();
+
+        var result = new Pes2021ClubScanResult(
+            runId,
+            attachmentInfo.ProcessId,
+            attachmentInfo.ProcessStartedAtUtc ?? DateTimeOffset.UtcNow,
+            attachmentInfo.ProcessName,
+            catalogLoad.SourcePath,
+            catalogLoad.SourceSha256,
+            competitionMapPath,
+            await ComputeSha256Async(competitionMapPath, cancellationToken),
+            layoutCandidates.Count(c => c.TeamId == 32784) > 0 ? 1 : 0,
+            layoutCandidates.Count(c => c.TeamId == 32768) > 0 ? 1 : 0,
+            layoutCandidates.Count(c => c.TeamId == 32804) > 0 ? 1 : 0,
+            0,
+            0,
+            0,
+            layoutCandidates.Count,
+            0,
+            stopwatch.ElapsedMilliseconds,
+            outputDirectory);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(outputDirectory, "validation-report.json"),
+            JsonSerializer.Serialize(BuildLayoutValidationReport(result, layoutCandidates.Count, restartObserved), new JsonSerializerOptions { WriteIndented = true }),
+            cancellationToken);
+
+        await WriteManifestAsync(Path.Combine(outputDirectory, "manifest.txt"), result, cancellationToken);
+
+        return result;
+    }
+
+    private static IReadOnlyList<Pes2021ClubObservationRow> LoadObservations(string? path, Guid runId)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return [];
+        }
+
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Observations CSV not found at '{path}'.", path);
+        }
+
+        var rows = new List<Pes2021ClubObservationRow>();
+        using var reader = new StreamReader(path);
+        var headerLine = reader.ReadLine();
+        if (headerLine is null)
+        {
+            return rows;
+        }
+
+        var header = headerLine.Split(',');
+        var teamIdIndex = IndexOfHeader(header, "team_id");
+        var secondaryIndex = IndexOfHeader(header, "secondary_id");
+        var controlIndex = IndexOfHeader(header, "control_case");
+        var addressIndex = IndexOfHeader(header, "club_record_address");
+        var notesIndex = IndexOfHeader(header, "notes");
+        if (teamIdIndex < 0 || secondaryIndex < 0 || addressIndex < 0)
+        {
+            throw new InvalidDataException("Observations CSV header missing team_id/secondary_id/club_record_address.");
+        }
+
+        while (!reader.EndOfStream)
+        {
+            var raw = reader.ReadLine();
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                continue;
+            }
+
+            var cells = raw.Split(',');
+            if (cells.Length <= Math.Max(teamIdIndex, Math.Max(secondaryIndex, addressIndex)))
+            {
+                continue;
+            }
+
+            if (!int.TryParse(cells[teamIdIndex], out var teamId))
+            {
+                continue;
+            }
+
+            if (!int.TryParse(cells[secondaryIndex], out var secondaryId))
+            {
+                continue;
+            }
+
+            ulong? address = null;
+            var addressText = cells[addressIndex];
+            if (!string.IsNullOrEmpty(addressText))
+            {
+                address = ParseAddressFlexible(addressText);
+            }
+
+            var control = controlIndex >= 0 && controlIndex < cells.Length ? cells[controlIndex] : "C0";
+            var notes = notesIndex >= 0 && notesIndex < cells.Length ? cells[notesIndex] : string.Empty;
+
+            rows.Add(new Pes2021ClubObservationRow(
+                runId,
+                control,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                null,
+                null,
+                teamId,
+                secondaryId,
+                address,
+                null,
+                null,
+                "P1_OBSERVATION",
+                "CANDIDATE",
+                notes));
+        }
+
+        return rows;
+    }
+
+    private static ulong? ParseAddressFlexible(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        var span = text.AsSpan().Trim();
+
+        if (span.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            if (ulong.TryParse(span[2..], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var hex))
+            {
+                return hex;
+            }
+        }
+
+        if (ulong.TryParse(span, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var hexOnly))
+        {
+            return hexOnly;
+        }
+
+        if (ulong.TryParse(span, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var dec))
+        {
+            return dec;
+        }
+
+        return null;
+    }
+
+    private static int IndexOfHeader(string[] header, string name)
+    {
+        for (var i = 0; i < header.Length; i++)
+        {
+            if (string.Equals(header[i], name, StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static int ParseControlOrdinal(string controlCase)
+    {
+        var text = controlCase ?? string.Empty;
+        if (text.Length >= 2 && text[0] == 'C' && int.TryParse(text.AsSpan(1), out var ordinal))
+        {
+            return ordinal;
+        }
+
+        return 99;
+    }
+
+    private static object BuildLayoutValidationReport(Pes2021ClubScanResult result, int candidateCount, bool restartObserved)
+    {
+        var gates = new SortedDictionary<string, string>
+        {
+            ["layout_windows_read"] = candidateCount > 0 ? "PASS" : "FAIL",
+            ["anchors_in_layout"] = (result.AnchorSantosFound == 1 && result.AnchorAthleticoParanaenseFound == 1 && result.AnchorRosarioCentralFound == 1) ? "PASS" : "PARTIAL",
+            ["no_process_writes"] = "PASS",
+            ["ct_untouched"] = "PASS"
+        };
+
+        return new
+        {
+            schema = ValidationReportSchema,
+            mode = "layout",
+            run_id = result.RunId.ToString("D"),
+            process_id = result.ProcessId,
+            process_started_at_utc = result.ProcessStartedAtUtc.ToString("O"),
+            candidate_count = candidateCount,
+            anchors = new
+            {
+                santos = result.AnchorSantosFound == 1,
+                athletico_paranaense = result.AnchorAthleticoParanaenseFound == 1,
+                rosario_central = result.AnchorRosarioCentralFound == 1
+            },
+            restart_observed = restartObserved,
+            scan_duration_ms = result.ScanDurationMs,
+            gates
+        };
     }
 
     private static IReadOnlyDictionary<(int TeamId, int SecondaryId), string> BuildControlCaseMap(

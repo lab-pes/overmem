@@ -9,4 +9,7 @@ public sealed record Pes2021ScanClubRelationsCliCommand(
     string CompetitionMapPath,
     string OutputDirectory,
     int BlockBytes,
-    int RestartTimeoutSeconds) : CliCommand;
+    int RestartTimeoutSeconds,
+    string Mode,
+    string? InputObservationsPath,
+    int[] WindowSizes) : CliCommand;
