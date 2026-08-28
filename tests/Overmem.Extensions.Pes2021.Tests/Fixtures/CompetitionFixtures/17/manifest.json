@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "pes2021.fixture-manifest.v1",
+  "competitionId": 17,
+  "competitionName": "Brasileirão Série A (Referência de Aceite)",
+  "fixtureFile": "memory.bin",
+  "sizeBytes": 226480,
+  "recordCount": 380,
+  "strideBytes": 596,
+  "sha256": "fb5bf4c53f415ee1e7499b95fa173b55ec335a4f192dcd35f30fe00842cee5b0",
+  "sanitizedLogicalBaseAddress": "0x10000000",
+  "sourceMemoryAddress": "0x7FF4DACFFF1C",
+  "profileId": "pes2021-pc-reference-competition-17",
+  "profileVersion": "0.1.0-observed",
+  "profileSha256": "343be1f632db06a718bbc691dfa19b5231ad4fd40307ea8e3c81e7dbfe21c01d",
+  "executable": {
+    "processName": "PES2021",
+    "fileVersion": "1.7.2.0",
+    "productVersion": "1.7.2.0",
+    "sha256": "02afa1b8601087c4163688fb015150b26568bd1031ee6752b16b902805db2fc7"
+  },
+  "capturedAtUtc": "2026-08-27T23:04:48Z",
+  "captureProcedure": "Live read-only extraction of contiguous 380 records (stride 596 bytes) starting from discovered competition block base 0x7FF4DACFFF1C in PES2021.exe",
+  "epistemologicalStatus": "LIVE_CAPTURED_HOMOLOGATED",
+  "acceptanceCriteria": {
+    "fixtureCount": 380,
+    "distinctTeamCount": 20,
+    "santosMatchesCount": 38,
+    "unresolvedKeysCount": 0,
+    "catalogConflictsCount": 0
+  }
+}

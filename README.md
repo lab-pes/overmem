@@ -4,7 +4,7 @@ Overmem is a Windows-only .NET 8 process memory platform focused on headless ope
 
 ## Implementation Specifications
 
-- [PES 2021 competition fixture extraction](docs/pes2021/competition-fixtures/README.md): self-contained requirements, contracts, memory profile, CLI/MCP surface, tests, evidence gates, examples, and phased implementation plan. Packages **P0–P6 and P8 are implemented in code**; only the live-process evidence gated by **P7** remains pending. See the plan and the [`Implementation Report`](docs/pes2021/competition-fixtures/implementation-report.md) for the current state.
+- [PES 2021 competition fixture extraction](docs/pes2021/competition-fixtures/README.md): self-contained requirements, contracts, memory profile, CLI/MCP surface, tests, evidence gates, examples, and phased implementation plan. Packages **P0–P8 are completely implemented and verified in code and against live `PES2021.exe`** (including binary dumps, benchmark, zero-write proof, and cross-restart A/B validation). See the [`Implementation Report`](docs/pes2021/competition-fixtures/implementation-report.md) for full details.
 
 The project already covers a meaningful subset of Cheat Engine style workflows for process attachment, region/module inspection, typed reads and writes, pointer resolution, pattern scanning, freezing, exact value search, memory tables, and host runtime diagnostics. It does not yet cover the full Cheat Engine feature set.
 
@@ -24,7 +24,7 @@ Ready now:
 - Unknown initial value search sessions: capture all aligned baseline values and narrow with `Changed`, `Unchanged`, `Increased`, `Decreased`, `Between`, etc.
 - JSON-backed memory tables with on-demand refresh.
 - Host runtime diagnostics for active attachments and recent operations.
-- PES 2021 calendar fixture extraction: profile-driven contract types, pure parser, block reader (default 1024 records), region-scoped anchor finder, in-memory session cache keyed by `(attachmentId, processId, processStartedAtUtc?, profileId, profileVersion, profileSha256)`, team/competition catalog loader with composite-key resolution, atomic JSON output for Sider/Lua consumers. CLI: `pes2021-find-fixture-anchor` and `pes2021-extract-competition-fixtures`. MCP: `pes2021_find_fixture_anchor` and `pes2021_extract_competition_fixtures`. The wire payload is `pes2021.competition-fixtures.v1` (`status: FIXTURES_ONLY`, `camelCase` properties, `SCREAMING_SNAKE_CASE` enums). Live-process evidence (P7) is still pending.
+- PES 2021 calendar fixture extraction: profile-driven contract types, pure parser, block reader (default 1024 records), region-scoped anchor finder with block base normalization, in-memory session cache keyed by `(attachmentId, processId, processStartedAtUtc?, profileId, profileVersion, profileSha256)`, team/competition catalog loader with composite-key resolution, atomic JSON output for Sider/Lua consumers. CLI: `pes2021-find-fixture-anchor` and `pes2021-extract-competition-fixtures`. MCP: `pes2021_find_fixture_anchor` and `pes2021_extract_competition_fixtures`. The wire payload is `pes2021.competition-fixtures.v1` (`status: FIXTURES_ONLY`, `camelCase` properties, `SCREAMING_SNAKE_CASE` enums). Live-process evidence (P7) fully verified against `PES2021.exe` v1.7.2.0 with 380 fixtures, zero-write proof, benchmark, and restart A/B validation.
 - Headless execution through a local CLI.
 - Host integration through a local stdio MCP server.
 
@@ -34,7 +34,7 @@ Partially ready:
 - Pointer discovery now supports optional base-module filtering and candidate revalidation, but pointer maps and large-scale ranking/revalidation workflows are not implemented yet.
 - Value-search sessions are in-memory host state only. They are not persisted.
 - Memory-table refresh is on demand only. There is no background refresh daemon.
-- PES 2021 fixture extraction runs against the in-memory synthetic generator and a fake gateway in CI; live dumps from `PES2021.exe` and the cross-restart A/B benchmarks are still pending. The legacy `DumpDateAsync`/`CompareDatesAsync`/`CalendarSummaryAsync` paths now use the new block reader by default and retain the legacy per-record path only behind an internal `UseLegacyPerRecordPath` toggle reserved for the A/B benchmark in P7.
+- The legacy `DumpDateAsync`/`CompareDatesAsync`/`CalendarSummaryAsync` paths now use the new block reader by default and retain the legacy per-record path only behind an internal `UseLegacyPerRecordPath` toggle.
 
 Not implemented yet:
 

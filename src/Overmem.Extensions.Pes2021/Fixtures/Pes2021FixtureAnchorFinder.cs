@@ -175,13 +175,34 @@ public sealed class Pes2021FixtureAnchorFinder
             .ThenBy(candidate => candidate.Address, StringComparer.Ordinal)
             .ToList();
 
-        var winner = PickWinner(ordered, profile.AnchorValidation, rejectionReasons);
+        var (winner, competitionBlockBaseHex) = await PickWinnerAsync(
+            attachmentId,
+            ordered,
+            competitionId,
+            profile,
+            rejectionReasons,
+            cancellationToken);
+
         var confidence = ComputeConfidence(winner, ordered, profile.AnchorValidation, rejectionReasons);
         stopwatch.Stop();
 
         var validationSampleSha256 = winner is null
             ? string.Empty
             : await HashAnchorWindowAsync(attachmentId, winner.Address, profile, cancellationToken);
+
+        var calendarArrayBaseHex = TryComputeArrayBase(competitionBlockBaseHex, profile);
+        int anchorIndex = 0;
+        if (winner is not null && TryParseHex(winner.Address, out var winAddr))
+        {
+            if (calendarArrayBaseHex is not null && TryParseHex(calendarArrayBaseHex, out var arrBase))
+            {
+                anchorIndex = (int)((winAddr - arrBase) / (ulong)profile.Stride);
+            }
+            else if (competitionBlockBaseHex is not null && TryParseHex(competitionBlockBaseHex, out var compBase))
+            {
+                anchorIndex = (int)((winAddr - compBase) / (ulong)profile.Stride);
+            }
+        }
 
         var session = new CalendarSession(
             process,
@@ -190,10 +211,10 @@ public sealed class Pes2021FixtureAnchorFinder
             profile.Sha256,
             profile.Stride,
             profile.Calendar.RecordLimit,
-            CalendarArrayBaseAddress: TryComputeArrayBase(winner, profile),
-            CompetitionBlockBaseAddress: winner?.Address ?? string.Empty,
+            CalendarArrayBaseAddress: calendarArrayBaseHex,
+            CompetitionBlockBaseAddress: competitionBlockBaseHex ?? string.Empty,
             AnchorAddress: winner?.Address ?? string.Empty,
-            AnchorIndex: 0,
+            AnchorIndex: anchorIndex,
             ValidationSampleSha256: validationSampleSha256,
             ValidatedAtUtc: _clock.UtcNow,
             CacheDisposition: CacheDisposition.Discovered);
@@ -226,9 +247,9 @@ public sealed class Pes2021FixtureAnchorFinder
             RequestedTeamKey: requestedKey,
             RequestedTeamId: teamId,
             AnchorAddress: winner?.Address,
-            CompetitionBlockBaseAddress: winner?.Address,
-            CalendarArrayBaseAddress: TryComputeArrayBase(winner, profile),
-            AnchorIndex: 0,
+            CompetitionBlockBaseAddress: competitionBlockBaseHex,
+            CalendarArrayBaseAddress: calendarArrayBaseHex,
+            AnchorIndex: anchorIndex,
             Confidence: confidence,
             Candidates: ordered,
             Diagnostics: diagnostics);
@@ -490,32 +511,108 @@ public sealed class Pes2021FixtureAnchorFinder
         }
     }
 
-    private static AnchorCandidate? PickWinner(
+    private async Task<(AnchorCandidate? Winner, string? CompetitionBlockBase)> PickWinnerAsync(
+        AttachmentId attachmentId,
         List<AnchorCandidate> ordered,
-        Pes2021AnchorValidation validation,
-        Dictionary<string, int> rejectionReasons)
+        CompetitionId competitionId,
+        Pes2021FixtureProfile profile,
+        Dictionary<string, int> rejectionReasons,
+        CancellationToken cancellationToken)
     {
         if (ordered.Count == 0)
         {
             Increment(rejectionReasons, "no_candidate");
-            return null;
+            return (null, null);
         }
 
         var top = ordered[0];
-        var tied = ordered.FindAll(candidate => candidate.Score == top.Score);
-        if (tied.Count > 1)
-        {
-            Increment(rejectionReasons, "ambiguous_tie");
-            return null;
-        }
-
-        if (top.Score < validation.MediumScore)
+        if (top.Score < profile.AnchorValidation.MediumScore)
         {
             Increment(rejectionReasons, "score_below_medium");
-            return null;
+            return (null, null);
         }
 
-        return top;
+        var tied = ordered.FindAll(candidate => candidate.Score == top.Score);
+        if (tied.Count == 1)
+        {
+            var singleBlockBase = await FindCompetitionBlockBaseAsync(attachmentId, top.Address, competitionId, profile, cancellationToken);
+            return (top, singleBlockBase);
+        }
+
+        // Multiple candidates share the top score. Group by normalized competition block base.
+        var baseCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var blockGroups = new Dictionary<string, List<AnchorCandidate>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var candidate in tied)
+        {
+            if (!baseCache.TryGetValue(candidate.Address, out var blockBase))
+            {
+                blockBase = await FindCompetitionBlockBaseAsync(attachmentId, candidate.Address, competitionId, profile, cancellationToken);
+                baseCache[candidate.Address] = blockBase;
+            }
+
+            if (!blockGroups.TryGetValue(blockBase, out var group))
+            {
+                group = new List<AnchorCandidate>();
+                blockGroups[blockBase] = group;
+            }
+
+            group.Add(candidate);
+        }
+
+        if (blockGroups.Count > 1)
+        {
+            // Rival competition blocks tied with the same top score without structural tiebreaker.
+            Increment(rejectionReasons, "ambiguous_tie");
+            return (null, null);
+        }
+
+        // All tied candidates normalize to the exact same competition block.
+        var winningBlock = blockGroups.First();
+        var earliestCandidate = winningBlock.Value.OrderBy(c => TryParseHex(c.Address, out var a) ? a : ulong.MaxValue).First();
+        return (earliestCandidate, winningBlock.Key);
+    }
+
+    private async Task<string> FindCompetitionBlockBaseAsync(
+        AttachmentId attachmentId,
+        string anchorAddressHex,
+        CompetitionId competitionId,
+        Pes2021FixtureProfile profile,
+        CancellationToken cancellationToken)
+    {
+        if (!TryParseHex(anchorAddressHex, out var cursor))
+        {
+            return anchorAddressHex;
+        }
+
+        var stride = (ulong)profile.Stride;
+        var currentBlockBase = cursor;
+
+        // Walk backwards by stride while records belong to the requested competition and remain valid
+        for (var step = 0; step < 1000; step++)
+        {
+            if (currentBlockBase < stride)
+            {
+                break;
+            }
+
+            var previousAddress = currentBlockBase - stride;
+            var slice = await ReadSliceAsync(attachmentId, previousAddress, profile.Stride, cancellationToken);
+            if (slice is null)
+            {
+                break;
+            }
+
+            var parse = Pes2021CalendarRecordParser.TryParse(slice, 0, previousAddress, profile);
+            if (!parse.Success || parse.Record is null || parse.Record.CompetitionId.Value != competitionId.Value)
+            {
+                break;
+            }
+
+            currentBlockBase = previousAddress;
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"0x{currentBlockBase:X}");
     }
 
     private static DiscoveryConfidence ComputeConfidence(
@@ -543,9 +640,9 @@ public sealed class Pes2021FixtureAnchorFinder
         return new DiscoveryConfidence(level, winner.Score, maxScore, winner.Reasons);
     }
 
-    private static string? TryComputeArrayBase(AnchorCandidate? winner, Pes2021FixtureProfile profile)
+    private static string? TryComputeArrayBase(string? competitionBlockBaseHex, Pes2021FixtureProfile profile)
     {
-        if (winner is null)
+        if (string.IsNullOrEmpty(competitionBlockBaseHex))
         {
             return null;
         }
@@ -555,7 +652,7 @@ public sealed class Pes2021FixtureAnchorFinder
             return null;
         }
 
-        if (!TryParseHex(winner.Address, out var anchorAddress))
+        if (!TryParseHex(competitionBlockBaseHex, out var blockBaseAddress))
         {
             return null;
         }
@@ -566,7 +663,7 @@ public sealed class Pes2021FixtureAnchorFinder
             return null;
         }
 
-        var baseAddress = checked(anchorAddress - (ulong)startIndex.Value * (ulong)profile.Stride);
+        var baseAddress = checked(blockBaseAddress - (ulong)startIndex.Value * (ulong)profile.Stride);
         return string.Create(CultureInfo.InvariantCulture, $"0x{baseAddress:X}");
     }
 

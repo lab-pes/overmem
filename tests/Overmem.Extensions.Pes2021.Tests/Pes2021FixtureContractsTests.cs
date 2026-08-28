@@ -632,6 +632,9 @@ public sealed class Pes2021FixtureContractsTests
         gateway.AddRegion(0x1000, 0x254 * 32, 17,
             new DateOnly(2026, 4, 18), (ushort)32784, (ushort)32768,
             homeLiga: 313, awayLiga: 482, round: 0, homeScore: 0, awayScore: 0, competitionSequence: sequence);
+        gateway.AddRegion(0x50000, 0x254 * 32, 17,
+            new DateOnly(2026, 4, 18), (ushort)32784, (ushort)32768,
+            homeLiga: 313, awayLiga: 482, round: 0, homeScore: 0, awayScore: 0, competitionSequence: sequence);
         var service = CreateFixtureService(gateway);
         var identity = new ProcessInstanceIdentity(new AttachmentId(Guid.NewGuid()), 0, null, "PES2021");
         var anchor = await service.FindFixtureAnchorAsync(new AttachmentId(Guid.NewGuid()), identity, SampleProfile(), new CompetitionId(17), 32784, 313, default);
