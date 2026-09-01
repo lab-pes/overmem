@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P2",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": true,
+    "processMemoryRead": false,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerRecordRejectionReasons.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerModels.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerBitfieldCodec.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerRecordParser.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerRecordValidator.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerParserTests.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerBitfieldCodecTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerParserTests": 15,
+    "Pes2021PlayerBitfieldCodecTests": 10
+  },
+  "claims": [
+    {
+      "claim": "Pure parser decodes the five control records from feasibility-study.md without process memory access.",
+      "evidence": "Pes2021PlayerParserTests.Parser_DecodesFiveControlRecords_FromFeasibilityStudy."
+    },
+    {
+      "claim": "Cheap validation runs before expensive string scans.",
+      "evidence": "Pes2021PlayerParserTests.Parser_RejectsHeightOutOfRange + Parser_RejectsWeightOutOfRange + Parser_RejectsPlayerIdOutOfRange return the correct reason code."
+    },
+    {
+      "claim": "Bitfield writes preserve every other bit in the container.",
+      "evidence": "Pes2021PlayerBitfieldCodecTests.Write_InsertsBits_AndPreservesOtherBitsInContainer."
+    },
+    {
+      "claim": "Bitfield writes preserve every other byte in the record.",
+      "evidence": "Pes2021PlayerBitfieldCodecTests.Write_PreservesAllOtherBytesInRecord."
+    },
+    {
+      "claim": "Bitfield writes never mutate the caller buffer.",
+      "evidence": "Pes2021PlayerBitfieldCodecTests.Write_DoesNotMutateOriginalBuffer."
+    },
+    {
+      "claim": "Validator returns score + reasons, never just a boolean.",
+      "evidence": "Pes2021PlayerParserTests.Validator_HappyPath_HasMaxScoreAndAccepts + Validator_RejectsHeightOutOfRange_WithoutReturningFalseSilently + Pes2021PlayerBitfieldCodecTests.Validator_WithNeighbors_AddsNeighborScores."
+    },
+    {
+      "claim": "Default evidence status is CANDIDATE or UNKNOWN, never silently CONFIRMED.",
+      "evidence": "Pes2021PlayerParserTests.Parser_DefaultStatusIsCandidateOrUnknown_NeverConfirmed."
+    },
+    {
+      "claim": "Signed I8 and I32 boundaries decode without overflow.",
+      "evidence": "Pes2021PlayerParserTests.Parser_SignedI8BoundaryValues_DecodeWithoutOverflow + Parser_SignedI32BoundaryValues_DecodeWithoutOverflow."
+    }
+  ]
+}
