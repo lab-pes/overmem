@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "pes2021.player-memory.v1",
+  "kind": "player_scan",
+  "session": {
+    "attachmentId": "00000000-0000-0000-0000-000000000000",
+    "processId": 1,
+    "processStartedAtUtc": "2026-08-30T19:12:33.000Z",
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "1.0.0",
+    "profileSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "arena": {
+    "context": "EDIT_BASE_CANDIDATE",
+    "segments": [
+      {"startAddress": "0x0", "stopAddress": "0x0", "stride": 380, "theoreticalSlots": 23253}
+    ]
+  },
+  "summary": {
+    "recordsDecoded": 23253,
+    "recordsAccepted": 23120,
+    "recordsRejected": 133,
+    "duplicatePlayerIds": 3,
+    "ambiguousResolutions": 0,
+    "holes": 0,
+    "partialReads": 0
+  },
+  "players": [
+    {
+      "recordAddress": "0x0",
+      "playerId": 1,
+      "fingerprint": "placeholder",
+      "context": "EDIT_BASE_CANDIDATE",
+      "rawRecordSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "fields": [
+        {"name": "height", "raw": 184, "display": null, "evidenceStatus": "CONFIRMED"},
+        {"name": "marketValue", "raw": 500000, "display": 50000000, "evidenceStatus": "CANDIDATE", "transform": "rawMul100Eur"},
+        {"name": "unknown_12c", "raw": 65535, "display": null, "evidenceStatus": "UNKNOWN"}
+      ]
+    }
+  ],
+  "diagnostics": {
+    "regionsEnumerated": 412,
+    "regionsAccepted": 38,
+    "regionsRejected": 374,
+    "bytesRequested": 33554432,
+    "bytesRead": 33554432,
+    "readCalls": 33,
+    "elapsedMs": 412.7,
+    "rejectionReasons": {"height_out_of_range": 11, "weight_out_of_range": 8, "name_unterminated": 22}
+  },
+  "warnings": ["three_duplicate_player_ids_detected"]
+}

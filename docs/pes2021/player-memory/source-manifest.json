@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "pes2021.player-memory.source-manifest.v1",
+  "captureDate": "2026-08-31",
+  "notes": "All sources are read-only evidence. Overmem must not require any of them at runtime. SHA-256 values are recomputed at test time; the values below are the verified hashes from the feasibility study.",
+  "sources": [
+    {
+      "id": "zerar-valor-mercado-lua",
+      "externalPath": "C:\\Users\\Willian\\Documents\\My Cheat Tables\\scripts\\players\\ZerarValorMercado.lua",
+      "overmemPath": null,
+      "expectedSha256": "27A8486E0145725EB8D9C370566038C50B98BC5E5AEB8009927E0C076DF1D809",
+      "role": "Entry point and active v4 wiring",
+      "runtimeDependency": false
+    },
+    {
+      "id": "player-tool-operations-lua",
+      "externalPath": "C:\\Users\\Willian\\Documents\\My Cheat Tables\\scripts\\players\\player_tool\\operations.lua",
+      "overmemPath": null,
+      "expectedSha256": "A3F540FCE2E698914BF2DB4669CE1082F2FB931DD62F1CF6D80F4E407C7B1CC7",
+      "role": "Scan, validation, export, recalibration, and write behavior",
+      "runtimeDependency": false
+    },
+    {
+      "id": "player-tool-reader-v5-lua",
+      "externalPath": "C:\\Users\\Willian\\Documents\\My Cheat Tables\\scripts\\players\\player_tool\\reader_v5.lua",
+      "overmemPath": null,
+      "expectedSha256": "D9F9B7919BF4CD8EAAF07983E23397FE1580EE2820D088E814A97A73563AD115",
+      "role": "Candidate canonical decoding behavior",
+      "runtimeDependency": false
+    },
+    {
+      "id": "player-tool-schema-v5-lua",
+      "externalPath": "C:\\Users\\Willian\\Documents\\My Cheat Tables\\scripts\\players\\player_tool\\schema_v5.lua",
+      "overmemPath": null,
+      "expectedSha256": "6BD22B451085FE4D4209D7DB5FA93152CE78683439D760CA88D33BFC7144050E",
+      "role": "Candidate canonical offsets and bitfields",
+      "runtimeDependency": false
+    },
+    {
+      "id": "pes2021-ct",
+      "externalPath": "C:\\Users\\Willian\\Documents\\My Cheat Tables\\PES 2021 - v21.1.0.CT",
+      "overmemPath": "files\\PES 2021 - v21.1.0.CT",
+      "expectedSha256": "DA67EB5C8F7B13243AD5BE654D618EA5E4BAEB52449FECBC453144AF6C89AF7C",
+      "role": "Primary structure reference",
+      "runtimeDependency": false,
+      "byteIdenticalCopy": true
+    },
+    {
+      "id": "jogadores-pes2021-txt",
+      "externalPath": "C:\\Users\\Willian\\Documents\\My Cheat Tables\\jogadores_pes2021.txt",
+      "overmemPath": null,
+      "expectedSha256": "0C771B409267009D28C6CC21C093113FB23749A97532676F07CB22EEA7047408",
+      "role": "Historical discovery evidence (address/record-family only)",
+      "runtimeDependency": false
+    }
+  ],
+  "constraints": {
+    "noRuntimeDependency": true,
+    "noAbsoluteLiveAddresses": true,
+    "noExternalRepositoryRequirement": true,
+    "treatLuaAsEvidenceOnly": true
+  }
+}

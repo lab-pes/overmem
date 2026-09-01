@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P0",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": false,
+    "processMemoryRead": false,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "docs/pes2021/player-memory/source-manifest.json",
+    "docs/pes2021/player-memory/wire-contracts.md",
+    "docs/pes2021/player-memory/error-codes.md",
+    "docs/pes2021/player-memory/wire-examples/anchor.json",
+    "docs/pes2021/player-memory/wire-examples/scan.json",
+    "docs/pes2021/player-memory/wire-examples/snapshot.json",
+    "docs/pes2021/player-memory/wire-examples/query.json",
+    "docs/pes2021/player-memory/wire-examples/patch-plan.json",
+    "docs/pes2021/player-memory/wire-examples/apply-result.json",
+    "docs/pes2021/player-memory/wire-examples/apply-result-dry-run.json",
+    "docs/pes2021/player-memory/wire-examples/apply-result-rejected.json",
+    "docs/pes2021/player-memory/wire-examples/rollback-result.json",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerContractsTests.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021SourceManifestTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerContractsTests": 8,
+    "Pes2021SourceManifestTests": 5
+  },
+  "claims": [
+    {
+      "claim": "All wire example payloads round-trip through System.Text.Json without losing semantic fields.",
+      "evidence": "Pes2021PlayerContractsTests.AnchorContract_RoundTripsThroughSystemTextJson + the six additional shape-specific tests."
+    },
+    {
+      "claim": "The source manifest marks every source as runtimeDependency=false.",
+      "evidence": "Pes2021SourceManifestTests.Manifest_DisablesRuntimeDependencyOnEverySource."
+    },
+    {
+      "claim": "The Overmem CT copy at files\\PES 2021 - v21.1.0.CT is byte-identical to the external source.",
+      "evidence": "Pes2021SourceManifestTests.Manifest_OvermemPathForCtIsByteIdentical_WhenPresent recomputes SHA-256 from disk and compares against the manifest's expectedSha256."
+    },
+    {
+      "claim": "No source path in the manifest embeds an absolute live address.",
+      "evidence": "Pes2021SourceManifestTests.Manifest_NoSourcePathContainsAbsoluteLiveAddress."
+    }
+  ]
+}

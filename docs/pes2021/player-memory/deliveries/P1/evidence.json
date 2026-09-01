@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P1",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": true,
+    "processMemoryRead": false,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerProfile.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerProfileException.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerProfileLoader.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerProfileDefaults.cs",
+    "files/pes2021/player-memory/pes2021-player-record-v1.json",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerProfileTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerProfileTests": 14
+  },
+  "profileShape": {
+    "schemaVersion": "pes2021.player-record.v1",
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "1.0.0",
+    "stride": 380,
+    "fieldCount": 27,
+    "neutralUnknownFields": ["unknown_12c", "unknown_12e", "unknown_178", "unknown_179"]
+  },
+  "claims": [
+    {
+      "claim": "Record stride is exactly 380 bytes.",
+      "evidence": "Pes2021PlayerProfileTests.BuiltInProfile_LoadsAndExposesExpectedStride + Loader_RejectsNonMatchingStride."
+    },
+    {
+      "claim": "Loader rejects every documented invalid profile.",
+      "evidence": "Loader_RejectsOffsetOutsideStride, Loader_RejectsBitOverflow, Loader_RejectsDuplicateFieldKey, Loader_RejectsUnjustifiedOverlap, Loader_RejectsUnsupportedType, Loader_RejectsBadEvidenceStatus, Loader_RejectsInvalidTransform."
+    },
+    {
+      "claim": "Built-in profile has no unjustified overlap.",
+      "evidence": "Pes2021PlayerProfileTests.BuiltInProfile_HasNoUnjustifiedOverlap."
+    },
+    {
+      "claim": "Neutral unknown fields keep their non-semantic names and UNKNOWN status.",
+      "evidence": "Pes2021PlayerProfileTests.BuiltInProfile_NeutralUnknownFieldsRemainUnknown + BuiltInProfile_ContainsMandatoryNeutralUnknownFields."
+    },
+    {
+      "claim": "Serialize/reload round-trip preserves the semantic profile.",
+      "evidence": "Pes2021PlayerProfileTests.Loader_RoundTripPreservesSemanticProfile."
+    },
+    {
+      "claim": "Shipped JSON profile loads with documented profile ID and computed SHA-256.",
+      "evidence": "Pes2021PlayerProfileTests.ShippedProfileJson_LoadsAndMatchesSchemaVersion."
+    },
+    {
+      "claim": "Field table renderer covers every field from the profile without hand-typed offsets.",
+      "evidence": "Pes2021PlayerProfileTests.FieldTableRenderer_RendersAllFieldsFromProfile_WithoutHandTypedOffsets."
+    }
+  ]
+}

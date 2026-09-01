@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "pes2021.player-memory.v1",
+  "kind": "apply_result",
+  "planId": "0000000000000000000000000000000000000000000000000000000000000000",
+  "session": {
+    "attachmentId": "00000000-0000-0000-0000-000000000000",
+    "processId": 1,
+    "processStartedAtUtc": "2026-08-30T19:12:33.000Z",
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "1.0.0",
+    "profileSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "outcome": "rejected",
+  "code": "PES2021_PLAYER_WRITE_NOT_AUTHORIZED",
+  "warnings": []
+}

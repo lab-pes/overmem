@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "pes2021.player-memory.v1",
+  "kind": "player_anchor",
+  "session": {
+    "attachmentId": "00000000-0000-0000-0000-000000000000",
+    "processId": 1,
+    "processStartedAtUtc": "2026-08-30T19:12:33.000Z",
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "1.0.0",
+    "profileSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "anchor": {
+    "recordAddress": "0x0",
+    "playerId": 1,
+    "fingerprint": "placeholder",
+    "context": "EDIT_BASE_CONFIRMED",
+    "evidenceStatus": "CONFIRMED",
+    "score": 17,
+    "reasons": ["id_match", "neighbor_run_forward_4", "neighbor_run_backward_2"]
+  },
+  "candidates": [
+    {
+      "recordAddress": "0x0",
+      "playerId": 1,
+      "score": 17,
+      "reasons": ["id_match", "neighbor_run_forward_4"]
+    }
+  ],
+  "diagnostics": {
+    "regionsEnumerated": 412,
+    "regionsAccepted": 38,
+    "regionsRejected": 374,
+    "bytesRequested": 33554432,
+    "bytesRead": 33554432,
+    "readCalls": 33,
+    "elapsedMs": 184.2,
+    "rejectionReasons": {"partial_read": 0, "stride_mismatch": 2, "id_outside_record": 1}
+  },
+  "warnings": []
+}

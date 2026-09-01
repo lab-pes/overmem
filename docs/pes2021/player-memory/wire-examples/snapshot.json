@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "pes2021.player-memory.v1",
+  "kind": "player_snapshot",
+  "session": {
+    "attachmentId": "00000000-0000-0000-0000-000000000000",
+    "processId": 1,
+    "processStartedAtUtc": "2026-08-30T19:12:33.000Z",
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "1.0.0",
+    "profileSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "player": {
+    "recordAddress": "0x0",
+    "playerId": 1,
+    "fingerprint": "placeholder",
+    "context": "EDIT_BASE_CONFIRMED",
+    "rawRecordSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "fields": [
+      {"name": "height", "raw": 184, "display": null, "evidenceStatus": "CONFIRMED"},
+      {"name": "weight", "raw": 74, "display": null, "evidenceStatus": "CONFIRMED"},
+      {"name": "playerName", "raw": "placeholder", "display": null, "evidenceStatus": "CONFIRMED"},
+      {"name": "marketValue", "raw": 500000, "display": 50000000, "evidenceStatus": "CANDIDATE"}
+    ]
+  },
+  "warnings": []
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "pes2021.player-memory.v1",
+  "kind": "patch_plan",
+  "planId": "0000000000000000000000000000000000000000000000000000000000000000",
+  "session": {
+    "attachmentId": "00000000-0000-0000-0000-000000000000",
+    "processId": 1,
+    "processStartedAtUtc": "2026-08-30T19:12:33.000Z",
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "1.0.0",
+    "profileSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "target": {
+    "recordAddress": "0x0",
+    "playerId": 1,
+    "expectedFingerprint": "placeholder",
+    "context": "EDIT_BASE_CONFIRMED"
+  },
+  "patches": [
+    {
+      "field": "marketValue",
+      "offset": 372,
+      "oldBytes": "20 A1 07 00",
+      "newBytes": "00 00 00 00",
+      "rawOld": 500000,
+      "rawNew": 0,
+      "displayOld": 50000000,
+      "displayNew": 0
+    }
+  ],
+  "rollback": {
+    "rollbackId": "0000000000000000000000000000000000000000000000000000000000000000",
+    "artifactPath": "<absolute-path-to-rollback-artifact>"
+  },
+  "warnings": []
+}
