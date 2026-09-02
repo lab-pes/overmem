@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P3",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": true,
+    "processMemoryRead": true,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerDiscoveryDiagnostics.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerDiscoveryDiagnosticsCollector.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerSessionCache.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerAnchorFinder.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerRegionScanner.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/FakeProcessMemoryGateway.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/FakeSystemClock.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerDiscoveryTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerDiscoveryTests": 8
+  },
+  "claims": [
+    {
+      "claim": "Anchor finder locates the control record by player ID through the gateway.",
+      "evidence": "Pes2021PlayerDiscoveryTests.AnchorFinder_FindsAnchorAtPlayerId_AndClassifiesCandidates."
+    },
+    {
+      "claim": "Anchor finder returns null anchor when no candidate matches.",
+      "evidence": "Pes2021PlayerDiscoveryTests.AnchorFinder_ReturnsNullAnchor_WhenNoCandidateMatches."
+    },
+    {
+      "claim": "Anchor finder respects the profile region filter.",
+      "evidence": "Pes2021PlayerDiscoveryTests.AnchorFinder_RespectsProfileRegionFilter."
+    },
+    {
+      "claim": "Region scanner decodes all five control records and counts duplicates correctly.",
+      "evidence": "Pes2021PlayerDiscoveryTests.RegionScanner_DecodesAllFiveRecords_AndCountsDuplicates + RegionScanner_ReportsDuplicatePlayerIds_WhenAddressesOverlap."
+    },
+    {
+      "claim": "Session cache stores, reuses, and invalidates entries correctly.",
+      "evidence": "Pes2021PlayerDiscoveryTests.SessionCache_StoresAndReuses_AfterRevalidation + SessionCache_InvalidatesWhenAnchorBytesChange + SessionCache_InvalidateByAttachment_RemovesOnlyMatchingEntries."
+    }
+  ]
+}
