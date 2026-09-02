@@ -664,13 +664,40 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 string? name = null;
                 if (nullAt > 0)
                 {
-                    name = System.Text.Encoding.ASCII.GetString(nameBytes.Slice(0, nullAt));
-                    var hasInvalid = false;
-                    foreach (var ch in name)
+                    var nameSlice = nameBytes.Slice(0, nullAt);
+                    var isUtf8 = true;
+                    for (var ni = 0; ni < nameSlice.Length; ni++)
                     {
-                        if (ch < (char)32 || ch == (char)127) { hasInvalid = true; break; }
+                        var b = nameSlice[ni];
+                        if (b < 0x20 || b == 0x7F) { isUtf8 = false; break; }
+                        if (b >= 0xC2 && b <= 0xDF)
+                        {
+                            if (ni + 1 >= nameSlice.Length) { isUtf8 = false; break; }
+                            if ((nameSlice[ni + 1] & 0xC0) != 0x80) { isUtf8 = false; break; }
+                            ni++;
+                        }
+                        else if (b >= 0xE0 && b <= 0xEF)
+                        {
+                            if (ni + 2 >= nameSlice.Length) { isUtf8 = false; break; }
+                            if ((nameSlice[ni + 1] & 0xC0) != 0x80) { isUtf8 = false; break; }
+                            if ((nameSlice[ni + 2] & 0xC0) != 0x80) { isUtf8 = false; break; }
+                            ni += 2;
+                        }
+                        else if (b >= 0x80)
+                        {
+                            isUtf8 = false;
+                            break;
+                        }
                     }
-                    if (hasInvalid) name = null;
+                    if (isUtf8)
+                    {
+                        var bytes = nameSlice.ToArray();
+                        name = System.Text.Encoding.UTF8.GetString(bytes);
+                    }
+                    else
+                    {
+                        name = System.Text.Encoding.ASCII.GetString(nameSlice);
+                    }
                 }
                 if (name is null || name.Trim().Length == 0) continue;
 

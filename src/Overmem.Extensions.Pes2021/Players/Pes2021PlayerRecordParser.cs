@@ -163,6 +163,25 @@ public static class Pes2021PlayerRecordParser
                 case Pes2021PlayerFieldType.FixedAscii:
                 {
                     var (text, reason, terminator) = DecodeFixedAscii(raw, field.Width);
+                    if (reason is null && (field.Name == "playerName" || field.Name == "clubShirtName" || field.Name == "nationalShirtName"))
+                    {
+                        try
+                        {
+                            var nullAt = -1;
+                            for (var ni = 0; ni < raw.Length; ni++)
+                            {
+                                if (raw[ni] == 0) { nullAt = ni; break; }
+                            }
+                            if (nullAt < 0) nullAt = raw.Length;
+                            var utf8Bytes = new byte[nullAt];
+                            for (var bi = 0; bi < nullAt; bi++) utf8Bytes[bi] = raw[bi];
+                            text = System.Text.Encoding.UTF8.GetString(utf8Bytes);
+                        }
+                        catch
+                        {
+                            // fall back to ASCII
+                        }
+                    }
                     var isPrimaryName = field.Name == "playerName";
 
                     if (isPrimaryName && reason is not null)
@@ -258,7 +277,37 @@ public static class Pes2021PlayerRecordParser
             return (string.Empty, PlayerRecordRejectionReasons.NameEmpty, terminator);
         }
 
-        var text = Encoding.ASCII.GetString(effective);
+        var bytes = effective.ToArray();
+        var text = IsLikelyUtf8(bytes)
+            ? Encoding.UTF8.GetString(bytes)
+            : Encoding.ASCII.GetString(bytes);
         return (text, null, terminator);
+    }
+
+    private static bool IsLikelyUtf8(byte[] bytes)
+    {
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            var b = bytes[i];
+            if (b < 0x80) continue;
+            if (b >= 0xC2 && b <= 0xDF)
+            {
+                if (i + 1 >= bytes.Length) return false;
+                var next = bytes[i + 1];
+                if ((next & 0xC0) != 0x80) return false;
+                i++;
+                continue;
+            }
+            if (b >= 0xE0 && b <= 0xEF)
+            {
+                if (i + 2 >= bytes.Length) return false;
+                if ((bytes[i + 1] & 0xC0) != 0x80) return false;
+                if ((bytes[i + 2] & 0xC0) != 0x80) return false;
+                i += 2;
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 }
