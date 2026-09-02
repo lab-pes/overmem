@@ -200,3 +200,9 @@ public sealed record Pes2021StrideScanPlayersCliCommand(
     ulong StopAddress,
     int Stride,
     int MaxRecords) : CliCommand;
+
+public sealed record Pes2021ScanAllArenasCliCommand(
+    ProcessSelector Selector,
+    int Stride,
+    int MaxRecordsPerArena,
+    ulong MinRegionSize) : CliCommand;

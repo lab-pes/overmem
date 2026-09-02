@@ -1,0 +1,640 @@
+{
+  "schemaVersion": "pes2021.player-memory.live.v3",
+  "kind": "player_catalog",
+  "captureDate": "2026-09-02",
+  "process": {
+    "processId": 33136,
+    "processName": "PES2021",
+    "startedAtUtc": "2026-09-02T15:57:10+00:00",
+    "context": "EDIT_BASE_CANDIDATE"
+  },
+  "arenas": {
+    "A": {
+      "baseAddress": "0x7FF4D9E60000",
+      "count": 33
+    },
+    "B": {
+      "baseAddress": "0x7FF4D9F50000",
+      "count": 28
+    }
+  },
+  "strideNote": "Slot stride = 763 bytes. PES record stride = 0x46C94 (289.940 bytes = 380 * 763).",
+  "summary": {
+    "recordsTotal": 61,
+    "uniquePlayerIds": 61,
+    "playerIdMin": 10681.0,
+    "playerIdMax": 727872.0
+  },
+  "records": [
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 132,
+      "address": "0x7FF4D9E7896C",
+      "playerId": 10681,
+      "height": 193,
+      "weight": 80,
+      "name": "Nicolas Kocik"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 512,
+      "address": "0x7FF4D9EBF600",
+      "playerId": 37197,
+      "height": 178,
+      "weight": 75,
+      "name": "Nicolò Brighenti"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 892,
+      "address": "0x7FF4D9F06294",
+      "playerId": 42375,
+      "height": 185,
+      "weight": 80,
+      "name": "Bruno Martins Indi"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 1272,
+      "address": "0x7FF4D9F4CF28",
+      "playerId": 46203,
+      "height": 190,
+      "weight": 86,
+      "name": "Neto Volpi"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 12,
+      "address": "0x7FF4D9F523C4",
+      "playerId": 46464,
+      "height": 182,
+      "weight": 71,
+      "name": "Martín García"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 1652,
+      "address": "0x7FF4D9F93BBC",
+      "playerId": 54076,
+      "height": 182,
+      "weight": 74,
+      "name": "Alex Cazumba"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 392,
+      "address": "0x7FF4D9F99058",
+      "playerId": 54253,
+      "height": 183,
+      "weight": 84,
+      "name": "Julian Ryerson"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 2032,
+      "address": "0x7FF4D9FDA850",
+      "playerId": 55362,
+      "height": 173,
+      "weight": 67,
+      "name": "Johan Martínez"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 772,
+      "address": "0x7FF4D9FDFCEC",
+      "playerId": 55526,
+      "height": 177,
+      "weight": 78,
+      "name": "Bruno Giménez"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 2412,
+      "address": "0x7FF4DA0214E4",
+      "playerId": 57965,
+      "height": 176,
+      "weight": 68,
+      "name": "K. Tapies"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 1152,
+      "address": "0x7FF4DA026980",
+      "playerId": 58024,
+      "height": 188,
+      "weight": 77,
+      "name": "Hebert"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 2792,
+      "address": "0x7FF4DA068178",
+      "playerId": 59985,
+      "height": 191,
+      "weight": 86,
+      "name": "Hazem Mastouri"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 1532,
+      "address": "0x7FF4DA06D614",
+      "playerId": 60169,
+      "height": 186,
+      "weight": 79,
+      "name": "Rodrigo Contreras"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 3172,
+      "address": "0x7FF4DA0AEE0C",
+      "playerId": 63783,
+      "height": 188,
+      "weight": 75,
+      "name": "Mory Gbane"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 1912,
+      "address": "0x7FF4DA0B42A8",
+      "playerId": 65051,
+      "height": 171,
+      "weight": 68,
+      "name": "Tayeb Meziani"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 3552,
+      "address": "0x7FF4DA0F5AA0",
+      "playerId": 102141,
+      "height": 192,
+      "weight": 77,
+      "name": "Nicolò Savona"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 2292,
+      "address": "0x7FF4DA0FAF3C",
+      "playerId": 102417,
+      "height": 175,
+      "weight": 70,
+      "name": "Álex Granell"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 3932,
+      "address": "0x7FF4DA13C734",
+      "playerId": 105056,
+      "height": 176,
+      "weight": 72,
+      "name": "Petros Mantalos"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 2672,
+      "address": "0x7FF4DA141BD0",
+      "playerId": 105298,
+      "height": 172,
+      "weight": 69,
+      "name": "Franco Cristaldo"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 4312,
+      "address": "0x7FF4DA1833C8",
+      "playerId": 108657,
+      "height": 174,
+      "weight": 79,
+      "name": "Lautaro Martínez"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 3052,
+      "address": "0x7FF4DA188864",
+      "playerId": 108822,
+      "height": 173,
+      "weight": 70,
+      "name": "Lucas Marques"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 4692,
+      "address": "0x7FF4DA1CA05C",
+      "playerId": 111166,
+      "height": 176,
+      "weight": 73,
+      "name": "Rodrigo Soares"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 3432,
+      "address": "0x7FF4DA1CF4F8",
+      "playerId": 111320,
+      "height": 193,
+      "weight": 98,
+      "name": "Daniel Sappa"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 5072,
+      "address": "0x7FF4DA210CF0",
+      "playerId": 113993,
+      "height": 184,
+      "weight": 70,
+      "name": "Mamadou Camara"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 3812,
+      "address": "0x7FF4DA21618C",
+      "playerId": 114113,
+      "height": 179,
+      "weight": 76,
+      "name": "Niccolò Corrado"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 5452,
+      "address": "0x7FF4DA257984",
+      "playerId": 116428,
+      "height": 188,
+      "weight": 80,
+      "name": "Mamadou Loum"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 4192,
+      "address": "0x7FF4DA25CE20",
+      "playerId": 116653,
+      "height": 192,
+      "weight": 84,
+      "name": "Marius Müller"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 5832,
+      "address": "0x7FF4DA29E618",
+      "playerId": 118656,
+      "height": 180,
+      "weight": 78,
+      "name": "Dujon Sterling"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 4572,
+      "address": "0x7FF4DA2A3AB4",
+      "playerId": 118957,
+      "height": 174,
+      "weight": 68,
+      "name": "Mathias Kjølø"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 6212,
+      "address": "0x7FF4DA2E52AC",
+      "playerId": 120481,
+      "height": 192,
+      "weight": 78,
+      "name": "Alejandro de Echevarría"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 4952,
+      "address": "0x7FF4DA2EA748",
+      "playerId": 120595,
+      "height": 193,
+      "weight": 86,
+      "name": "Oliwier Zych"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 6592,
+      "address": "0x7FF4DA32BF40",
+      "playerId": 122884,
+      "height": 187,
+      "weight": 80,
+      "name": "Wang Yaopeng"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 5332,
+      "address": "0x7FF4DA3313DC",
+      "playerId": 123081,
+      "height": 192,
+      "weight": 80,
+      "name": "Gabriel Grando"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 6972,
+      "address": "0x7FF4DA372BD4",
+      "playerId": 125368,
+      "height": 175,
+      "weight": 74,
+      "name": "Ege Bilsel"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 5712,
+      "address": "0x7FF4DA378070",
+      "playerId": 125490,
+      "height": 183,
+      "weight": 65,
+      "name": "Andrés Aedo"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 7352,
+      "address": "0x7FF4DA3B9868",
+      "playerId": 126950,
+      "height": 196,
+      "weight": 86,
+      "name": "Mota"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 6092,
+      "address": "0x7FF4DA3BED04",
+      "playerId": 127095,
+      "height": 178,
+      "weight": 73,
+      "name": "Sylian Mokono"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 7732,
+      "address": "0x7FF4DA4004FC",
+      "playerId": 128629,
+      "height": 186,
+      "weight": 73,
+      "name": "Jon Garro"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 6472,
+      "address": "0x7FF4DA405998",
+      "playerId": 128780,
+      "height": 174,
+      "weight": 83,
+      "name": "Felipe Mosquera"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 8112,
+      "address": "0x7FF4DA447190",
+      "playerId": 130626,
+      "height": 188,
+      "weight": 78,
+      "name": "Furkan Bayir"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 6852,
+      "address": "0x7FF4DA44C62C",
+      "playerId": 130794,
+      "height": 174,
+      "weight": 70,
+      "name": "Alan Marinelli"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 8492,
+      "address": "0x7FF4DA48DE24",
+      "playerId": 132578,
+      "height": 175,
+      "weight": 72,
+      "name": "Lucas Calegari"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 7232,
+      "address": "0x7FF4DA4932C0",
+      "playerId": 132651,
+      "height": 186,
+      "weight": 78,
+      "name": "Lekinho"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 8872,
+      "address": "0x7FF4DA4D4AB8",
+      "playerId": 133665,
+      "height": 170,
+      "weight": 63,
+      "name": "Romeo Benítez"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 7612,
+      "address": "0x7FF4DA4D9F54",
+      "playerId": 133745,
+      "height": 179,
+      "weight": 70,
+      "name": "Michael Kayode"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 9252,
+      "address": "0x7FF4DA51B74C",
+      "playerId": 135189,
+      "height": 178,
+      "weight": 69,
+      "name": "R. Furuyado"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 7992,
+      "address": "0x7FF4DA520BE8",
+      "playerId": 135283,
+      "height": 168,
+      "weight": 74,
+      "name": "Dorlan Pabón"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 9632,
+      "address": "0x7FF4DA5623E0",
+      "playerId": 136872,
+      "height": 190,
+      "weight": 78,
+      "name": "Djakaridja Junior Traoré"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 8372,
+      "address": "0x7FF4DA56787C",
+      "playerId": 136977,
+      "height": 170,
+      "weight": 72,
+      "name": "Joel Contreras"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 10012,
+      "address": "0x7FF4DA5A9074",
+      "playerId": 139737,
+      "height": 186,
+      "weight": 81,
+      "name": "Chen Zitong"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 8752,
+      "address": "0x7FF4DA5AE510",
+      "playerId": 139805,
+      "height": 181,
+      "weight": 68,
+      "name": "Nicolás Castro"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 10392,
+      "address": "0x7FF4DA5EFD08",
+      "playerId": 140674,
+      "height": 187,
+      "weight": 70,
+      "name": "Hugo Larsson"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 9132,
+      "address": "0x7FF4DA5F51A4",
+      "playerId": 140735,
+      "height": 187,
+      "weight": 83,
+      "name": "Antônio Čolak"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 10772,
+      "address": "0x7FF4DA63699C",
+      "playerId": 141813,
+      "height": 178,
+      "weight": 67,
+      "name": "Ernest Nuamah"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 9512,
+      "address": "0x7FF4DA63BE38",
+      "playerId": 141895,
+      "height": 180,
+      "weight": 77,
+      "name": "Talal Al-absi"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 11152,
+      "address": "0x7FF4DA67D630",
+      "playerId": 305630,
+      "height": 181,
+      "weight": 67,
+      "name": "Ibrahim Saadeh"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 9892,
+      "address": "0x7FF4DA682ACC",
+      "playerId": 308222,
+      "height": 186,
+      "weight": 78,
+      "name": "Amine Saïd"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 11532,
+      "address": "0x7FF4DA6C42C4",
+      "playerId": 379824,
+      "height": 185,
+      "weight": 70,
+      "name": "Mateusz Zukowski"
+    },
+    {
+      "arena": "B",
+      "arenaBaseAddress": "0x7FF4D9F50000",
+      "slot": 10272,
+      "address": "0x7FF4DA6C9760",
+      "playerId": 383470,
+      "height": 187,
+      "weight": 82,
+      "name": "Ousmane Touré"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 11912,
+      "address": "0x7FF4DA70AF58",
+      "playerId": 401519,
+      "height": 176,
+      "weight": 69,
+      "name": "Xiong Yian"
+    },
+    {
+      "arena": "A",
+      "arenaBaseAddress": "0x7FF4D9E60000",
+      "slot": 12293,
+      "address": "0x7FF4DA751EE7",
+      "playerId": 727872,
+      "height": 209,
+      "weight": 59,
+      "name": "as Al-buraikan"
+    }
+  ]
+}

@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "pes2021.player-memory.live.v1",
+  "processId": 33136,
+  "processName": "PES2021",
+  "startAddress": "0x7FF4D9E60000",
+  "stopAddress": "0x7FF4DA760000",
+  "stride": 763,
+  "recordsDecoded": 34,
+  "records": [
+    {
+      "slot": 132,
+      "address": "0x7FF4D9E7896C",
+      "playerId": 10681,
+      "height": 193,
+      "weight": 80,
+      "name": "Nicolas Kocik"
+    },
+    {
+      "slot": 512,
+      "address": "0x7FF4D9EBF600",
+      "playerId": 37197,
+      "height": 178,
+      "weight": 75,
+      "name": "Nicol\u00F2 Brighenti"
+    },
+    {
+      "slot": 892,
+      "address": "0x7FF4D9F06294",
+      "playerId": 42375,
+      "height": 185,
+      "weight": 80,
+      "name": "Bruno Martins Indi"
+    },
+    {
+      "slot": 1272,
+      "address": "0x7FF4D9F4CF28",
+      "playerId": 46203,
+      "height": 190,
+      "weight": 86,
+      "name": "Neto Volpi"
+    },
+    {
+      "slot": 1652,
+      "address": "0x7FF4D9F93BBC",
+      "playerId": 54076,
+      "height": 182,
+      "weight": 74,
+      "name": "Alex Cazumba"
+    },
+    {
+      "slot": 2032,
+      "address": "0x7FF4D9FDA850",
+      "playerId": 55362,
+      "height": 173,
+      "weight": 67,
+      "name": "Johan Mart\u00EDnez"
+    },
+    {
+      "slot": 2412,
+      "address": "0x7FF4DA0214E4",
+      "playerId": 57965,
+      "height": 176,
+      "weight": 68,
+      "name": "K. Tapies"
+    },
+    {
+      "slot": 2792,
+      "address": "0x7FF4DA068178",
+      "playerId": 59985,
+      "height": 191,
+      "weight": 86,
+      "name": "Hazem Mastouri"
+    },
+    {
+      "slot": 3172,
+      "address": "0x7FF4DA0AEE0C",
+      "playerId": 63783,
+      "height": 188,
+      "weight": 75,
+      "name": "Mory Gbane"
+    },
+    {
+      "slot": 3552,
+      "address": "0x7FF4DA0F5AA0",
+      "playerId": 102141,
+      "height": 192,
+      "weight": 77,
+      "name": "Nicol\u00F2 Savona"
+    },
+    {
+      "slot": 3932,
+      "address": "0x7FF4DA13C734",
+      "playerId": 105056,
+      "height": 176,
+      "weight": 72,
+      "name": "Petros Mantalos"
+    },
+    {
+      "slot": 4056,
+      "address": "0x7FF4DA1538C8",
+      "playerId": 2,
+      "height": 152,
+      "weight": 58,
+      "name": "z?\u0001"
+    },
+    {
+      "slot": 4312,
+      "address": "0x7FF4DA1833C8",
+      "playerId": 108657,
+      "height": 174,
+      "weight": 79,
+      "name": "Lautaro Mart\u00EDnez"
+    },
+    {
+      "slot": 4692,
+      "address": "0x7FF4DA1CA05C",
+      "playerId": 111166,
+      "height": 176,
+      "weight": 73,
+      "name": "Rodrigo Soares"
+    },
+    {
+      "slot": 5072,
+      "address": "0x7FF4DA210CF0",
+      "playerId": 113993,
+      "height": 184,
+      "weight": 70,
+      "name": "Mamadou Camara"
+    },
+    {
+      "slot": 5452,
+      "address": "0x7FF4DA257984",
+      "playerId": 116428,
+      "height": 188,
+      "weight": 80,
+      "name": "Mamadou Loum"
+    },
+    {
+      "slot": 5832,
+      "address": "0x7FF4DA29E618",
+      "playerId": 118656,
+      "height": 180,
+      "weight": 78,
+      "name": "Dujon Sterling"
+    },
+    {
+      "slot": 6212,
+      "address": "0x7FF4DA2E52AC",
+      "playerId": 120481,
+      "height": 192,
+      "weight": 78,
+      "name": "Alejandro de Echevarr\u00EDa"
+    },
+    {
+      "slot": 6592,
+      "address": "0x7FF4DA32BF40",
+      "playerId": 122884,
+      "height": 187,
+      "weight": 80,
+      "name": "Wang Yaopeng"
+    },
+    {
+      "slot": 6972,
+      "address": "0x7FF4DA372BD4",
+      "playerId": 125368,
+      "height": 175,
+      "weight": 74,
+      "name": "Ege Bilsel"
+    },
+    {
+      "slot": 7352,
+      "address": "0x7FF4DA3B9868",
+      "playerId": 126950,
+      "height": 196,
+      "weight": 86,
+      "name": "Mota"
+    },
+    {
+      "slot": 7732,
+      "address": "0x7FF4DA4004FC",
+      "playerId": 128629,
+      "height": 186,
+      "weight": 73,
+      "name": "Jon Garro"
+    },
+    {
+      "slot": 8112,
+      "address": "0x7FF4DA447190",
+      "playerId": 130626,
+      "height": 188,
+      "weight": 78,
+      "name": "Furkan Bayir"
+    },
+    {
+      "slot": 8492,
+      "address": "0x7FF4DA48DE24",
+      "playerId": 132578,
+      "height": 175,
+      "weight": 72,
+      "name": "Lucas Calegari"
+    },
+    {
+      "slot": 8872,
+      "address": "0x7FF4DA4D4AB8",
+      "playerId": 133665,
+      "height": 170,
+      "weight": 63,
+      "name": "Romeo Ben\u00EDtez"
+    },
+    {
+      "slot": 9252,
+      "address": "0x7FF4DA51B74C",
+      "playerId": 135189,
+      "height": 178,
+      "weight": 69,
+      "name": "R. Furuyado"
+    },
+    {
+      "slot": 9632,
+      "address": "0x7FF4DA5623E0",
+      "playerId": 136872,
+      "height": 190,
+      "weight": 78,
+      "name": "Djakaridja Junior Traor\u00E9"
+    },
+    {
+      "slot": 10012,
+      "address": "0x7FF4DA5A9074",
+      "playerId": 139737,
+      "height": 186,
+      "weight": 81,
+      "name": "Chen Zitong"
+    },
+    {
+      "slot": 10392,
+      "address": "0x7FF4DA5EFD08",
+      "playerId": 140674,
+      "height": 187,
+      "weight": 70,
+      "name": "Hugo Larsson"
+    },
+    {
+      "slot": 10772,
+      "address": "0x7FF4DA63699C",
+      "playerId": 141813,
+      "height": 178,
+      "weight": 67,
+      "name": "Ernest Nuamah"
+    },
+    {
+      "slot": 11152,
+      "address": "0x7FF4DA67D630",
+      "playerId": 305630,
+      "height": 181,
+      "weight": 67,
+      "name": "Ibrahim Saadeh"
+    },
+    {
+      "slot": 11532,
+      "address": "0x7FF4DA6C42C4",
+      "playerId": 379824,
+      "height": 185,
+      "weight": 70,
+      "name": "Mateusz Zukowski"
+    },
+    {
+      "slot": 11912,
+      "address": "0x7FF4DA70AF58",
+      "playerId": 401519,
+      "height": 176,
+      "weight": 69,
+      "name": "Xiong Yian"
+    },
+    {
+      "slot": 12293,
+      "address": "0x7FF4DA751EE7",
+      "playerId": 727872,
+      "height": 209,
+      "weight": 59,
+      "name": "as Al-buraikan"
+    }
+  ]
+}

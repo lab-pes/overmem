@@ -206,6 +206,11 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "stop-address")),
                 CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "stride") ?? "380"),
                 CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "max-records") ?? "200")),
+            "pes2021-scan-all-arenas" => new Pes2021ScanAllArenasCliCommand(
+                CliOptionParser.ParseSelector(options),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "stride") ?? "763"),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "max-records-per-arena") ?? "5000"),
+                CliOptionParser.ParseUnsignedLong(CliOptionParser.GetOptionalOption(options, "min-region-size") ?? "1048576")),
             _ => null
         };
     }
@@ -434,6 +439,15 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 strideScan.StopAddress,
                 strideScan.Stride,
                 strideScan.MaxRecords,
+                stdout,
+                cancellationToken),
+            Pes2021ScanAllArenasCliCommand scanAll => ExecuteScanAllArenasAsync(
+                scanAll.Selector,
+                services.GetRequiredService<ProcessMemoryApplicationService>(),
+                LoadPlayerProfile(null),
+                scanAll.Stride,
+                scanAll.MaxRecordsPerArena,
+                scanAll.MinRegionSize,
                 stdout,
                 cancellationToken),
             _ => null
@@ -722,6 +736,156 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 stride,
                 recordsDecoded = records.Count,
                 records,
+            };
+
+            await stdout.WriteLineAsync(JsonSerializer.Serialize(summary, JsonOptions));
+            return 0;
+        }
+        finally
+        {
+            await applicationService.DetachAsync(attachment.AttachmentId, cancellationToken);
+        }
+    }
+
+    private static async Task<int> ExecuteScanAllArenasAsync(
+        ProcessSelector selector,
+        ProcessMemoryApplicationService applicationService,
+        Pes2021PlayerProfile profile,
+        int stride,
+        int maxRecordsPerArena,
+        ulong minRegionSize,
+        TextWriter stdout,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await applicationService.AttachAsync(selector, cancellationToken);
+        try
+        {
+            var regions = await applicationService.ListRegionsAsync(attachment.AttachmentId, cancellationToken);
+            var candidates = regions
+                .Where(r => string.Equals(r.State, "Commit", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(r.Type, "Private", StringComparison.OrdinalIgnoreCase)
+                    && r.IsReadable && r.IsWritable
+                    && r.RegionSize >= minRegionSize)
+                .OrderByDescending(r => r.RegionSize)
+                .ToList();
+
+            var arenaSummaries = new List<object>();
+            var allRecords = new List<object>();
+            var globalSlot = 0;
+
+            foreach (var region in candidates)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var regionRecords = new List<object>();
+                var regionSlot = 0;
+                var start = region.BaseAddress;
+                var stop = checked(start + region.RegionSize);
+                for (var addr = start; addr < stop && regionRecords.Count < maxRecordsPerArena; addr += (ulong)stride, regionSlot++)
+                {
+                    ReadMemoryResult resp;
+                    try
+                    {
+                        resp = await applicationService.ReadAsync(
+                            new ReadMemoryRequest(attachment.AttachmentId, addr, MemoryValueKind.Bytes, profile.Stride),
+                            cancellationToken);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    if (resp.BytesRead != profile.Stride) continue;
+                    byte[] slice;
+                    try { slice = Convert.FromHexString(resp.Value); }
+                    catch { continue; }
+
+                    var height = slice[0];
+                    var weight = slice[1];
+                    if (height < 140 || height > 220 || weight < 40 || weight > 130) continue;
+
+                    var playerId = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(slice.AsSpan(0x30, 4));
+                    if (playerId < 1 || playerId > 2_000_000) continue;
+
+                    var nameBytes = slice.AsSpan(0x38, 61);
+                    var nullAt = nameBytes.IndexOf((byte)0);
+                    string? name = null;
+                    if (nullAt > 0)
+                    {
+                        var nameSlice = nameBytes.Slice(0, nullAt);
+                        var isUtf8 = true;
+                        for (var ni = 0; ni < nameSlice.Length; ni++)
+                        {
+                            var b = nameSlice[ni];
+                            if (b < 0x20 || b == 0x7F) { isUtf8 = false; break; }
+                            if (b >= 0xC2 && b <= 0xDF)
+                            {
+                                if (ni + 1 >= nameSlice.Length) { isUtf8 = false; break; }
+                                if ((nameSlice[ni + 1] & 0xC0) != 0x80) { isUtf8 = false; break; }
+                                ni++;
+                            }
+                            else if (b >= 0xE0 && b <= 0xEF)
+                            {
+                                if (ni + 2 >= nameSlice.Length) { isUtf8 = false; break; }
+                                if ((nameSlice[ni + 1] & 0xC0) != 0x80) { isUtf8 = false; break; }
+                                if ((nameSlice[ni + 2] & 0xC0) != 0x80) { isUtf8 = false; break; }
+                                ni += 2;
+                            }
+                            else if (b >= 0x80)
+                            {
+                                isUtf8 = false;
+                                break;
+                            }
+                        }
+                        var nameByteArr = nameSlice.ToArray();
+                        name = isUtf8 ? System.Text.Encoding.UTF8.GetString(nameByteArr) : System.Text.Encoding.ASCII.GetString(nameByteArr);
+                    }
+                    if (name is null || name.Trim().Length == 0) continue;
+
+                    var record = new
+                    {
+                        globalSlot,
+                        regionSlot,
+                        regionIndex = arenaSummaries.Count,
+                        address = $"0x{addr:X}",
+                        playerId,
+                        height,
+                        weight,
+                        name,
+                    };
+                    regionRecords.Add(record);
+                    allRecords.Add(record);
+                    globalSlot++;
+                }
+
+                if (regionRecords.Count > 0)
+                {
+                    arenaSummaries.Add(new
+                    {
+                        regionIndex = arenaSummaries.Count,
+                        baseAddress = $"0x{region.BaseAddress:X}",
+                        stopAddress = $"0x{stop:X}",
+                        sizeBytes = region.RegionSize,
+                        protection = region.Protection,
+                        recordsFound = regionRecords.Count,
+                        firstRecord = regionRecords[0],
+                        lastRecord = regionRecords[^1],
+                    });
+                }
+            }
+
+            var summary = new
+            {
+                schemaVersion = "pes2021.player-memory.live.v2",
+                processId = attachment.ProcessId,
+                processName = attachment.ProcessName,
+                stride,
+                maxRecordsPerArena,
+                minRegionSize,
+                arenasScanned = candidates.Count,
+                arenasWithPlayers = arenaSummaries.Count,
+                totalRecords = allRecords.Count,
+                arenas = arenaSummaries,
+                records = allRecords,
             };
 
             await stdout.WriteLineAsync(JsonSerializer.Serialize(summary, JsonOptions));
