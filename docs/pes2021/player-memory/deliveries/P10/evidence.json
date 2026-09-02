@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P10",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": false,
+    "processMemoryRead": false,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "docs/pes2021/player-memory/deliveries/P10/summary.md",
+    "docs/pes2021/player-memory/deliveries/P10/commands.md",
+    "docs/pes2021/player-memory/deliveries/P10/evidence.json",
+    "docs/pes2021/player-memory/deliveries/P10/review-request.md"
+  ],
+  "tests": {
+    "Pes2021PlayerMemoryTests": 78,
+    "Pes2021TotalTests": 320,
+    "OvermemTests": 62
+  },
+  "claims": [
+    {
+      "claim": "Full solution builds with 0 warnings and 0 errors.",
+      "evidence": "dotnet build Overmem.slnx -c Debug"
+    },
+    {
+      "claim": "All 382 tests pass.",
+      "evidence": "dotnet test Overmem.slnx --no-build -c Debug"
+    },
+    {
+      "claim": "Player-memory stack is read-only against real PES2021.exe; writes are restricted to Overmem.TestTarget by default.",
+      "evidence": "Pes2021PlayerTransactionCore.DefaultAllowedProcessNames"
+    },
+    {
+      "claim": "Field promotion to Confirmed is gated by Pes2021PlayerWritePolicy.",
+      "evidence": "Pes2021PlayerWritePolicyTests"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ Overmem is a Windows-only .NET 8 process memory platform focused on headless ope
 ## Implementation Specifications
 
 - [PES 2021 competition fixture extraction](docs/pes2021/competition-fixtures/README.md): self-contained requirements, contracts, memory profile, CLI/MCP surface, tests, evidence gates, examples, and phased implementation plan. Packages **P0–P8 are completely implemented and verified in code and against live `PES2021.exe`** (including binary dumps, benchmark, zero-write proof, and cross-restart A/B validation). See the [`Implementation Report`](docs/pes2021/competition-fixtures/implementation-report.md) for full details.
+- [PES 2021 player-memory feasibility study](docs/pes2021/player-memory/feasibility-study.md): read-only evidence that the always-loaded EDIT `0x17C` player-record family can be discovered without Cheat Engine, plus field-confidence boundaries and a guarded read/write architecture. The [live EDIT arena evidence](docs/pes2021/player-memory/edit-live-evidence-2026-08-31.md) classifies all 30,001 slots in the observed session. The accepted [EDIT-first decision](docs/pes2021/player-memory/edit-first-decision.md) defines complete arena/record coverage and defers Master League to an independent comparative mapping. Use the [Codex/Antigravity checkpoint](docs/pes2021/player-memory/handoff-codex-antigravity.md) to resume work safely. **Packages P0–P5 (read-only stack) and P7 + P9 (TestTarget transaction core and write policy) are implemented and verified in code.** P6 (live read validation) and P8 (single-player `marketValue` write pilot) remain deferred until explicit authorization and a backup of the save are provided. See [`docs/pes2021/player-memory/deliveries/P10/summary.md`](docs/pes2021/player-memory/deliveries/P10/summary.md) for the full roster.
 
 The project already covers a meaningful subset of Cheat Engine style workflows for process attachment, region/module inspection, typed reads and writes, pointer resolution, pattern scanning, freezing, exact value search, memory tables, and host runtime diagnostics. It does not yet cover the full Cheat Engine feature set.
 
@@ -25,6 +26,7 @@ Ready now:
 - JSON-backed memory tables with on-demand refresh.
 - Host runtime diagnostics for active attachments and recent operations.
 - PES 2021 calendar fixture extraction: profile-driven contract types, pure parser, block reader (default 1024 records), region-scoped anchor finder with block base normalization, in-memory session cache keyed by `(attachmentId, processId, processStartedAtUtc?, profileId, profileVersion, profileSha256)`, team/competition catalog loader with composite-key resolution, atomic JSON output for Sider/Lua consumers. CLI: `pes2021-find-fixture-anchor` and `pes2021-extract-competition-fixtures`. MCP: `pes2021_find_fixture_anchor` and `pes2021_extract_competition_fixtures`. The wire payload is `pes2021.competition-fixtures.v1` (`status: FIXTURES_ONLY`, `camelCase` properties, `SCREAMING_SNAKE_CASE` enums). Live-process evidence (P7) fully verified against `PES2021.exe` v1.7.2.0 with 380 fixtures, zero-write proof, benchmark, and restart A/B validation.
+- PES 2021 player-memory read surface: versioned player-record profile (`pes2021.player-record.v1`), pure record parser + score-based validator, bitfield read-modify-write codec, anchor finder, region scanner, in-memory session cache keyed by `(attachmentId, processId, processStartedAtUtc?, profileId, profileVersion, profileSha256)`, thread-safe player catalog, query service with explicit ambiguous handling, atomic JSON export under `pes2021.players.v1`. CLI: `pes2021-find-player-anchor`, `pes2021-scan-players`, `pes2021-query-player`, `pes2021-export-player-catalog`. MCP: `pes2021_find_player_anchor`, `pes2021_scan_players`, `pes2021_query_player`. The player-memory transaction core (`Pes2021PlayerTransactionCore`) is library-only with a default allowlist restricted to `Overmem.TestTarget`; PES2021 is not in the default allowlist and writes against the live process require an explicit override plus an authorization token and a per-field `Confirmed` evidence status.
 - Headless execution through a local CLI.
 - Host integration through a local stdio MCP server.
 
@@ -255,6 +257,12 @@ PES 2021 fixture tools (read-only, see [`docs/pes2021/competition-fixtures`](doc
 
 - `pes2021_find_fixture_anchor` — discover the calendar anchor for a `(competitionId, teamId[, teamLiga])` pair.
 - `pes2021_extract_competition_fixtures` — produce a `pes2021.competition-fixtures.v1` FIXTURES_ONLY payload for one competition.
+
+PES 2021 player-memory tools (read-only against `PES2021.exe`, transactions restricted to `Overmem.TestTarget`, see [`docs/pes2021/player-memory/deliveries/P10/summary.md`](docs/pes2021/player-memory/deliveries/P10/summary.md)):
+
+- `pes2021_find_player_anchor` — discover the EDIT-base player anchor for a control player ID.
+- `pes2021_scan_players` — decode every structurally valid 380-byte player record in the EDIT arena.
+- `pes2021_query_player` — query the in-memory catalog by player ID; ambiguous duplicates are returned, never silently resolved.
 
 ### MCP Workflow Example
 
