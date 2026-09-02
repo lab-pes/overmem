@@ -193,3 +193,10 @@ public sealed record Pes2021ExportPlayerCatalogCliCommand(
     uint ControlPlayerId,
     string? ProfileFile,
     string OutputFile) : CliCommand;
+
+public sealed record Pes2021StrideScanPlayersCliCommand(
+    ProcessSelector Selector,
+    ulong StartAddress,
+    ulong StopAddress,
+    int Stride,
+    int MaxRecords) : CliCommand;

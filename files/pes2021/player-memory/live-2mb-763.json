@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "pes2021.player-memory.live.v1",
+  "processId": 33136,
+  "processName": "PES2021",
+  "startAddress": "0x7FF4D9F50000",
+  "stopAddress": "0x7FF4DA500000",
+  "stride": 763,
+  "recordsDecoded": 21,
+  "records": [
+    {
+      "slot": 12,
+      "address": "0x7FF4D9F523C4",
+      "playerId": 46464,
+      "height": 182,
+      "weight": 71,
+      "name": "Mart??n Garc??a"
+    },
+    {
+      "slot": 392,
+      "address": "0x7FF4D9F99058",
+      "playerId": 54253,
+      "height": 183,
+      "weight": 84,
+      "name": "Julian Ryerson"
+    },
+    {
+      "slot": 772,
+      "address": "0x7FF4D9FDFCEC",
+      "playerId": 55526,
+      "height": 177,
+      "weight": 78,
+      "name": "Bruno Gim??nez"
+    },
+    {
+      "slot": 1152,
+      "address": "0x7FF4DA026980",
+      "playerId": 58024,
+      "height": 188,
+      "weight": 77,
+      "name": "Hebert"
+    },
+    {
+      "slot": 1532,
+      "address": "0x7FF4DA06D614",
+      "playerId": 60169,
+      "height": 186,
+      "weight": 79,
+      "name": "Rodrigo Contreras"
+    },
+    {
+      "slot": 1912,
+      "address": "0x7FF4DA0B42A8",
+      "playerId": 65051,
+      "height": 171,
+      "weight": 68,
+      "name": "Tayeb Meziani"
+    },
+    {
+      "slot": 2292,
+      "address": "0x7FF4DA0FAF3C",
+      "playerId": 102417,
+      "height": 175,
+      "weight": 70,
+      "name": "??lex Granell"
+    },
+    {
+      "slot": 2672,
+      "address": "0x7FF4DA141BD0",
+      "playerId": 105298,
+      "height": 172,
+      "weight": 69,
+      "name": "Franco Cristaldo"
+    },
+    {
+      "slot": 3052,
+      "address": "0x7FF4DA188864",
+      "playerId": 108822,
+      "height": 173,
+      "weight": 70,
+      "name": "Lucas Marques"
+    },
+    {
+      "slot": 3432,
+      "address": "0x7FF4DA1CF4F8",
+      "playerId": 111320,
+      "height": 193,
+      "weight": 98,
+      "name": "Daniel Sappa"
+    },
+    {
+      "slot": 3812,
+      "address": "0x7FF4DA21618C",
+      "playerId": 114113,
+      "height": 179,
+      "weight": 76,
+      "name": "Niccol?? Corrado"
+    },
+    {
+      "slot": 4192,
+      "address": "0x7FF4DA25CE20",
+      "playerId": 116653,
+      "height": 192,
+      "weight": 84,
+      "name": "Marius M??ller"
+    },
+    {
+      "slot": 4572,
+      "address": "0x7FF4DA2A3AB4",
+      "playerId": 118957,
+      "height": 174,
+      "weight": 68,
+      "name": "Mathias Kj??l??"
+    },
+    {
+      "slot": 4952,
+      "address": "0x7FF4DA2EA748",
+      "playerId": 120595,
+      "height": 193,
+      "weight": 86,
+      "name": "Oliwier Zych"
+    },
+    {
+      "slot": 5332,
+      "address": "0x7FF4DA3313DC",
+      "playerId": 123081,
+      "height": 192,
+      "weight": 80,
+      "name": "Gabriel Grando"
+    },
+    {
+      "slot": 5712,
+      "address": "0x7FF4DA378070",
+      "playerId": 125490,
+      "height": 183,
+      "weight": 65,
+      "name": "Andr??s Aedo"
+    },
+    {
+      "slot": 6092,
+      "address": "0x7FF4DA3BED04",
+      "playerId": 127095,
+      "height": 178,
+      "weight": 73,
+      "name": "Sylian Mokono"
+    },
+    {
+      "slot": 6472,
+      "address": "0x7FF4DA405998",
+      "playerId": 128780,
+      "height": 174,
+      "weight": 83,
+      "name": "Felipe Mosquera"
+    },
+    {
+      "slot": 6852,
+      "address": "0x7FF4DA44C62C",
+      "playerId": 130794,
+      "height": 174,
+      "weight": 70,
+      "name": "Alan Marinelli"
+    },
+    {
+      "slot": 7232,
+      "address": "0x7FF4DA4932C0",
+      "playerId": 132651,
+      "height": 186,
+      "weight": 78,
+      "name": "Lekinho"
+    },
+    {
+      "slot": 7612,
+      "address": "0x7FF4DA4D9F54",
+      "playerId": 133745,
+      "height": 179,
+      "weight": 70,
+      "name": "Michael Kayode"
+    }
+  ]
+}

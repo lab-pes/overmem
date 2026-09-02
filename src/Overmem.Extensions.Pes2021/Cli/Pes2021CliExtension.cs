@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Overmem.Abstractions.Cli;
+using Overmem.Abstractions.Memory;
 using Overmem.Abstractions.Processes;
 using Overmem.Application;
 using Overmem.Extensions.Pes2021.ClubRelations;
@@ -199,6 +200,12 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 CliOptionParser.ParseUInt32(CliOptionParser.GetRequiredOption(options, "control-player-id")),
                 CliOptionParser.GetOptionalOption(options, "profile-file"),
                 CliOptionParser.GetRequiredOption(options, "output")),
+            "pes2021-stride-scan-players" => new Pes2021StrideScanPlayersCliCommand(
+                CliOptionParser.ParseSelector(options),
+                CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "start-address")),
+                CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "stop-address")),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "stride") ?? "380"),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "max-records") ?? "200")),
             _ => null
         };
     }
@@ -419,6 +426,16 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 Pes2021AtomicFileWriter.WriteJson(exportCatalog.OutputFile, export, JsonOptions);
                 return export;
             }, stdout, exportCatalog.OutputFile, cancellationToken),
+            Pes2021StrideScanPlayersCliCommand strideScan => ExecuteStrideScanAsync(
+                strideScan.Selector,
+                services.GetRequiredService<ProcessMemoryApplicationService>(),
+                LoadPlayerProfile(null),
+                strideScan.StartAddress,
+                strideScan.StopAddress,
+                strideScan.Stride,
+                strideScan.MaxRecords,
+                stdout,
+                cancellationToken),
             _ => null
         };
     }
@@ -595,6 +612,97 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
         {
             await applicationService.DetachAsync(attachment.AttachmentId, cancellationToken);
             catalogService.Catalog.Clear();
+        }
+    }
+
+    private static async Task<int> ExecuteStrideScanAsync(
+        ProcessSelector selector,
+        ProcessMemoryApplicationService applicationService,
+        Pes2021PlayerProfile profile,
+        ulong startAddress,
+        ulong stopAddress,
+        int stride,
+        int maxRecords,
+        TextWriter stdout,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await applicationService.AttachAsync(selector, cancellationToken);
+        try
+        {
+            var records = new List<object>();
+            var slot = 0;
+            for (var addr = startAddress; addr < stopAddress && records.Count < maxRecords; addr += (ulong)stride, slot++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var req = new ReadMemoryRequest(attachment.AttachmentId, addr, MemoryValueKind.Bytes, profile.Stride);
+                ReadMemoryResult resp;
+                try
+                {
+                    resp = await applicationService.ReadAsync(req, cancellationToken);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                if (resp.BytesRead != profile.Stride) continue;
+
+                byte[] slice;
+                try { slice = Convert.FromHexString(resp.Value); }
+                catch { continue; }
+
+                var height = slice[0];
+                var weight = slice[1];
+                if (height < 140 || height > 220 || weight < 40 || weight > 130) continue;
+
+                var playerId = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(slice.AsSpan(0x30, 4));
+                if (playerId < 1 || playerId > 2_000_000) continue;
+
+                var nameStart = 0x38;
+                var nameBytes = slice.AsSpan(nameStart, 61);
+                var nullAt = nameBytes.IndexOf((byte)0);
+                string? name = null;
+                if (nullAt > 0)
+                {
+                    name = System.Text.Encoding.ASCII.GetString(nameBytes.Slice(0, nullAt));
+                    var hasInvalid = false;
+                    foreach (var ch in name)
+                    {
+                        if (ch < (char)32 || ch == (char)127) { hasInvalid = true; break; }
+                    }
+                    if (hasInvalid) name = null;
+                }
+                if (name is null || name.Trim().Length == 0) continue;
+
+                records.Add(new
+                {
+                    slot,
+                    address = $"0x{addr:X}",
+                    playerId,
+                    height,
+                    weight,
+                    name,
+                });
+            }
+
+            var summary = new
+            {
+                schemaVersion = "pes2021.player-memory.live.v1",
+                processId = attachment.ProcessId,
+                processName = attachment.ProcessName,
+                startAddress = $"0x{startAddress:X}",
+                stopAddress = $"0x{stopAddress:X}",
+                stride,
+                recordsDecoded = records.Count,
+                records,
+            };
+
+            await stdout.WriteLineAsync(JsonSerializer.Serialize(summary, JsonOptions));
+            return 0;
+        }
+        finally
+        {
+            await applicationService.DetachAsync(attachment.AttachmentId, cancellationToken);
         }
     }
 }
