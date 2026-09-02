@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P9",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": true,
+    "processMemoryRead": false,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerWritePolicy.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerTransactionCore.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerWritePolicyTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerWritePolicyTests": 5
+  },
+  "claims": [
+    {
+      "claim": "Unknown write status is rejected.",
+      "evidence": "Pes2021PlayerWritePolicyTests.Evaluate_RejectsFieldWithUnknownWriteStatus."
+    },
+    {
+      "claim": "Candidate write status is rejected even when other gates pass.",
+      "evidence": "Pes2021PlayerWritePolicyTests.Evaluate_AllowsConfirmedField_WhenContextMatches."
+    },
+    {
+      "claim": "Expired authorization is rejected.",
+      "evidence": "Pes2021PlayerWritePolicyTests.Evaluate_RejectsExpiredAuthorization."
+    },
+    {
+      "claim": "Field-name mismatch in the authorization is rejected.",
+      "evidence": "Pes2021PlayerWritePolicyTests.Evaluate_RejectsFieldLevelMismatch."
+    },
+    {
+      "claim": "Profile-identity mismatch is rejected.",
+      "evidence": "Pes2021PlayerWritePolicyTests.Evaluate_RejectsProfileIdentityMismatch."
+    }
+  ]
+}

@@ -43,6 +43,52 @@ public sealed class Pes2021PlayerTransactionCore
     public IReadOnlyList<string> AllowedProcessNames => _allowedProcessNames;
 
     /// <summary>
+    /// Default context the policy accepts when the caller does not specify one.
+    /// The transaction core never patches a field whose declared <c>ValidContexts</c>
+    /// does not include the active context.
+    /// </summary>
+    public Pes2021PlayerContext ActiveContext { get; set; } = Pes2021PlayerContext.EditBaseCandidate;
+
+    /// <summary>
+    /// Apply that enforces the per-field write policy. Refuses when:
+    /// - the field's <c>WriteStatus</c> is not <c>Confirmed</c>;
+    /// - the active context is not in the field's <c>ValidContexts</c>;
+    /// - the caller's profile identity does not match the expected id/version;
+    /// - the supplied <see cref="PlayerWriteAuthorization"/> is missing, expired,
+    ///   or scoped to a different field.
+    /// </summary>
+    public async Task<PlayerApplyResult> ApplyWithPolicyAsync(
+        AttachmentId attachmentId,
+        ProcessInstanceIdentity process,
+        Pes2021PlayerProfile profile,
+        PlayerPatchPlan plan,
+        PlayerWriteAuthorization? authorization,
+        CancellationToken cancellationToken)
+    {
+        EnsureProcessAllowed(process.ProcessName);
+
+        var field = profile.RecordLayout.Fields.Single(f => f.Name == plan.FieldName);
+        var policy = Pes2021PlayerWritePolicy.Evaluate(
+            profile, field, ActiveContext, authorization,
+            profile.ProfileId, profile.ProfileVersion, DateTimeOffset.UtcNow);
+        if (!policy.Allow)
+        {
+            return new PlayerApplyResult(
+                PlanId: plan.PlanId,
+                RollbackArtifactPath: plan.RollbackArtifactPath,
+                Outcome: "rejected",
+                Code: "PES2021_PLAYER_WRITE_NOT_AUTHORIZED",
+                RawBefore: plan.RawOld,
+                RawAfter: plan.RawOld,
+                RawBeforeSha256: string.Empty,
+                RawAfterSha256: string.Empty,
+                VerifiedAtUtc: DateTimeOffset.UtcNow);
+        }
+
+        return await ApplyAsync(attachmentId, process, profile, plan, dryRun: false, cancellationToken);
+    }
+
+    /// <summary>
     /// Builds a patch plan for one field. Reads the current bytes, computes the
     /// expected raw/display values, and writes a rollback artifact to disk. The plan
     /// is byte-perfect: <see cref="ApplyAsync"/> verifies the bytes on disk match
