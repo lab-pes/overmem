@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P7",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": true,
+    "processMemoryRead": true,
+    "processMemoryWrite": true,
+    "liveProcessAttached": false,
+    "liveWriteTarget": "FakeProcessMemoryGateway only; PES2021 not in default allowlist"
+  },
+  "artifacts": [
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerTransactionModels.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerTransactionCore.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerTransactionTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerTransactionTests": 5
+  },
+  "claims": [
+    {
+      "claim": "Plan + apply + verify + rollback round-trip restores the original market value.",
+      "evidence": "Pes2021PlayerTransactionTests.PlanApplyVerify_RoundTripsThroughFakeGateway."
+    },
+    {
+      "claim": "Apply rejects when the bytes on disk do not match the plan's old hex.",
+      "evidence": "Pes2021PlayerTransactionTests.ApplyAsync_RejectsExpectedBytesMismatch."
+    },
+    {
+      "claim": "Rollback restores the original bytes after a successful apply.",
+      "evidence": "Pes2021PlayerTransactionTests.RollbackAsync_RestoresBytes_WhenPostApplyStateMatchesPlan."
+    },
+    {
+      "claim": "Plan refuses any process name that is not in the allowlist.",
+      "evidence": "Pes2021PlayerTransactionTests.PlanAsync_RefusesUnknownProcess."
+    },
+    {
+      "claim": "Rollback artifact is written atomically through the existing writer.",
+      "evidence": "Pes2021PlayerTransactionTests.RollbackArtifact_IsWrittenAtomically."
+    }
+  ]
+}
