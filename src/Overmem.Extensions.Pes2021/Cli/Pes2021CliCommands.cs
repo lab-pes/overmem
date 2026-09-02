@@ -169,3 +169,27 @@ public sealed record Pes2021ExtractCompetitionFixturesCliCommand(
     int? BlockRecords,
     int? RecordLimit,
     string? OutputFile) : CliCommand;
+
+public sealed record Pes2021FindPlayerAnchorCliCommand(
+    ProcessSelector Selector,
+    uint ControlPlayerId,
+    string? ProfileFile,
+    string? OutputFile) : CliCommand;
+
+public sealed record Pes2021ScanPlayersCliCommand(
+    ProcessSelector Selector,
+    uint ControlPlayerId,
+    string? ProfileFile,
+    string? OutputFile,
+    int MaxRecords) : CliCommand;
+
+public sealed record Pes2021QueryPlayerCliCommand(
+    ProcessSelector Selector,
+    uint PlayerId,
+    string? ProfileFile) : CliCommand;
+
+public sealed record Pes2021ExportPlayerCatalogCliCommand(
+    ProcessSelector Selector,
+    uint ControlPlayerId,
+    string? ProfileFile,
+    string OutputFile) : CliCommand;

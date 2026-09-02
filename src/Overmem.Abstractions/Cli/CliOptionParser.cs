@@ -101,4 +101,9 @@ public static class CliOptionParser
             .Select(ParseInt32)
             .ToArray();
     }
+
+    public static uint ParseUInt32(string value)
+        => value.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+            ? Convert.ToUInt32(value[2..], 16)
+            : uint.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
 }

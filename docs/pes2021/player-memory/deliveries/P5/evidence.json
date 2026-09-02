@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P5",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": true,
+    "processMemoryRead": true,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "src/Overmem.Extensions.Pes2021/Tools/Pes2021PlayerTools.cs",
+    "src/Overmem.Abstractions/Cli/CliOptionParser.cs",
+    "src/Overmem.Extensions.Pes2021/Cli/Pes2021CliCommands.cs",
+    "src/Overmem.Extensions.Pes2021/Cli/Pes2021CliExtension.cs",
+    "src/Overmem.Extensions.Pes2021/Pes2021Extension.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerCliSurfaceTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerCliSurfaceTests": 4
+  },
+  "claims": [
+    {
+      "claim": "Player-memory services register through Pes2021Extension and resolve with proper DI scopes.",
+      "evidence": "src/Overmem.Extensions.Pes2021/Pes2021Extension.cs + Pes2021PlayerCliSurfaceTests.FindPlayerAnchor_RefreshScanQuery_RoundTripsThroughServices."
+    },
+    {
+      "claim": "All four new CLI commands parse correctly and the help text reflects them.",
+      "evidence": "Pes2021PlayerCliSurfaceTests.CliExtension_Parses_AllPlayerCommands."
+    },
+    {
+      "claim": "CLI parser rejects unknown commands.",
+      "evidence": "Pes2021PlayerCliSurfaceTests.CliExtension_RejectsUnknownCommand."
+    },
+    {
+      "claim": "Export CLI command writes the atomic JSON file end-to-end.",
+      "evidence": "Pes2021PlayerCliSurfaceTests.ExportCatalog_WritesAtomicFile_EndToEnd."
+    }
+  ]
+}
