@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "pes2021.player-memory.delivery.v1",
+  "package": "P4",
+  "date": "2026-08-31",
+  "evidence": {
+    "productionCodeTouched": true,
+    "processMemoryRead": true,
+    "processMemoryWrite": false,
+    "liveProcessAttached": false
+  },
+  "artifacts": [
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerQueryModels.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerCatalog.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerQueryService.cs",
+    "src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerCatalogExporter.cs",
+    "tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerCatalogTests.cs"
+  ],
+  "tests": {
+    "Pes2021PlayerCatalogTests": 6
+  },
+  "claims": [
+    {
+      "claim": "Catalog Replace + Snapshot round-trip records.",
+      "evidence": "Pes2021PlayerCatalogTests.Catalog_ReplaceAndSnapshot_RoundTripsRecords."
+    },
+    {
+      "claim": "Query service returns single match for an unambiguous ID.",
+      "evidence": "Pes2021PlayerCatalogTests.QueryService_QueryByPlayerId_ReturnsSingleMatch."
+    },
+    {
+      "claim": "Query service flags ambiguous duplicates.",
+      "evidence": "Pes2021PlayerCatalogTests.QueryService_QueryByPlayerId_FlagsAmbiguous_WhenDuplicates."
+    },
+    {
+      "claim": "Query service supports exact and partial name matching.",
+      "evidence": "Pes2021PlayerCatalogTests.QueryService_QueryByName_ExactAndPartial."
+    },
+    {
+      "claim": "Exporter builds pes2021.players.v1 with raw + display + evidence status.",
+      "evidence": "Pes2021PlayerCatalogTests.Exporter_BuildsPes2021PlayersV1Payload."
+    },
+    {
+      "claim": "Exporter writes an atomic JSON file and the payload round-trips.",
+      "evidence": "Pes2021PlayerCatalogTests.Exporter_WritesAtomicFile_WithStablePayload."
+    }
+  ]
+}
