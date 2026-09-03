@@ -152,7 +152,7 @@ public sealed class Pes2021ClubRelationsService
                 continue;
             }
 
-            var concatenated = BuildConcatenatedBuffer(blocks);
+            var concatenated = Pes2021RegionBlockAssembler.AssembleContiguousPrefix(blocks);
             regionSnapshot.Add(new RegionBlockSnapshot(region, blocks, concatenated));
 
             for (var i = 0; i < blocks.Count; i++)
@@ -531,30 +531,6 @@ public sealed class Pes2021ClubRelationsService
         }
 
         return map;
-    }
-
-    private static byte[] BuildConcatenatedBuffer(IReadOnlyList<RegionBlockRead> blocks)
-    {
-        if (blocks.Count == 0)
-        {
-            return Array.Empty<byte>();
-        }
-
-        var total = blocks.Sum(b => b.BytesRead);
-        if (total == 0)
-        {
-            return Array.Empty<byte>();
-        }
-
-        var buffer = new byte[total];
-        var offset = 0;
-        foreach (var block in blocks)
-        {
-            Array.Copy(block.Payload, 0, buffer, offset, block.BytesRead);
-            offset += block.BytesRead;
-        }
-
-        return buffer;
     }
 
     private static void DetectCatalogCollisions(

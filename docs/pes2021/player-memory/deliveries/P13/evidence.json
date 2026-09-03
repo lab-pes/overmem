@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "pes2021.club-relations.audit.v1",
+  "date": "2026-09-02",
+  "safety": {
+    "liveScan": false,
+    "processAttachment": false,
+    "memoryWrites": 0
+  },
+  "implemented": [
+    {
+      "id": "F-001",
+      "status": "CONFIRMED_FIXED",
+      "finding": "overlapping block payloads were appended instead of merged by BlockOffset",
+      "tests": 3
+    },
+    {
+      "id": "F-002",
+      "status": "CONFIRMED_FIXED",
+      "finding": "catalog and best-candidate maps collapsed composite identities to team_id",
+      "tests": 3
+    }
+  ],
+  "open": [
+    {
+      "id": "F-003",
+      "status": "CONFIRMED_OPEN",
+      "severity": "critical",
+      "finding": "NameMatchAddress is exported as club_record_address and used as layout origin"
+    },
+    {
+      "id": "F-004",
+      "status": "CONFIRMED_OPEN",
+      "severity": "high",
+      "finding": "Private-only region filters and an 8 MiB per-region read cap prevent complete coverage"
+    },
+    {
+      "id": "F-005",
+      "status": "CONFIRMED_OPEN",
+      "severity": "high",
+      "finding": "candidate score uses only exact name proximity to an incidental u16 team ID"
+    },
+    {
+      "id": "F-006",
+      "status": "CONFIRMED_OPEN",
+      "severity": "medium",
+      "finding": "only the top address per composite identity survives and ties are not reported"
+    },
+    {
+      "id": "F-007",
+      "status": "CONFIRMED_OPEN",
+      "severity": "medium",
+      "finding": "layout CSV reader does not parse quoted commas emitted by its writer"
+    },
+    {
+      "id": "F-008",
+      "status": "CONFIRMED_OPEN",
+      "severity": "low",
+      "finding": "anchor catalog presence check ignores secondary_id"
+    }
+  ],
+  "tests": {
+    "corePassed": 62,
+    "pes2021ExtensionPassed": 338,
+    "totalPassed": 400,
+    "failed": 0
+  },
+  "gate": "EXPLORATORY_CANDIDATE_ONLY_LAYOUT_BLOCKED"
+}
