@@ -55,18 +55,13 @@ def decode_record(player: dict[str, Any]) -> bytes:
     return raw
 
 
-def index_players(players: list[dict[str, Any]], label: str) -> dict[int, dict[str, Any]]:
-    result: dict[int, dict[str, Any]] = {}
-    duplicates: list[int] = []
+def group_players(players: list[dict[str, Any]], label: str) -> dict[int, list[dict[str, Any]]]:
+    result: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for player in players:
         player_id = int(player["playerId"])
         if not 0 <= player_id <= 0xFFFFFFFF:
             raise ValueError(f"{label} player ID outside opaque u32 range: {player_id}")
-        if player_id in result:
-            duplicates.append(player_id)
-        result[player_id] = player
-    if duplicates:
-        raise ValueError(f"{label} has duplicate player IDs: {sorted(set(duplicates))[:20]}")
+        result[player_id].append(player)
     return result
 
 
@@ -95,12 +90,20 @@ def compare(edit_path: Path, ml_path: Path, output: Path) -> dict[str, Any]:
     output.mkdir(parents=True, exist_ok=True)
     edit_dump = load_json(edit_path)
     ml_dump = load_json(ml_path)
-    edit_players = index_players(edit_dump["players"], "EDIT")
-    ml_players = index_players(ml_dump["players"], "ML")
+    edit_records_all = edit_dump["players"]
+    ml_records_all = ml_dump["players"]
+    edit_players = group_players(edit_records_all, "EDIT")
+    ml_players = group_players(ml_records_all, "ML")
+    for player in edit_records_all + ml_records_all:
+        decode_record(player)
 
-    edit_records = {player_id: decode_record(player) for player_id, player in edit_players.items()}
-    ml_records = {player_id: decode_record(player) for player_id, player in ml_players.items()}
     common_ids = sorted(edit_players.keys() & ml_players.keys())
+    ambiguous_ids = sorted(
+        player_id
+        for player_id in common_ids
+        if len(edit_players[player_id]) != 1 or len(ml_players[player_id]) != 1
+    )
+    safe_common_ids = sorted(set(common_ids) - set(ambiguous_ids))
     only_edit = sorted(edit_players.keys() - ml_players.keys())
     only_ml = sorted(ml_players.keys() - edit_players.keys())
 
@@ -114,9 +117,9 @@ def compare(edit_path: Path, ml_path: Path, output: Path) -> dict[str, Any]:
     exact_matches = 0
     changed_matches = 0
 
-    for player_id in common_ids:
-        edit_player = edit_players[player_id]
-        ml_player = ml_players[player_id]
+    for player_id in safe_common_ids:
+        edit_player = edit_players[player_id][0]
+        ml_player = ml_players[player_id][0]
         edit_fingerprint = fingerprint(str(edit_player["playerName"]))
         ml_fingerprint = fingerprint(str(ml_player["playerName"]))
         if edit_fingerprint != ml_fingerprint:
@@ -128,6 +131,8 @@ def compare(edit_path: Path, ml_path: Path, output: Path) -> dict[str, Any]:
                     "edit_name": edit_player["playerName"],
                     "ml_name": ml_player["playerName"],
                     "match_status": "FINGERPRINT_MISMATCH",
+                    "edit_instances": 1,
+                    "ml_instances": 1,
                     "changed_bytes": "",
                     "changed_fields": "",
                     "edit_record_sha256": edit_player["rawRecordSha256"],
@@ -136,8 +141,8 @@ def compare(edit_path: Path, ml_path: Path, output: Path) -> dict[str, Any]:
             )
             continue
 
-        edit_raw = edit_records[player_id]
-        ml_raw = ml_records[player_id]
+        edit_raw = decode_record(edit_player)
+        ml_raw = decode_record(ml_player)
         changed_offsets = [offset for offset in range(RECORD_SIZE) if edit_raw[offset] != ml_raw[offset]]
         for offset in changed_offsets:
             offset_changed_players[offset] += 1
@@ -181,6 +186,8 @@ def compare(edit_path: Path, ml_path: Path, output: Path) -> dict[str, Any]:
                 "edit_name": edit_player["playerName"],
                 "ml_name": ml_player["playerName"],
                 "match_status": status,
+                "edit_instances": 1,
+                "ml_instances": 1,
                 "changed_bytes": len(changed_offsets),
                 "changed_fields": ";".join(changed_fields),
                 "edit_record_sha256": edit_player["rawRecordSha256"],
@@ -188,21 +195,43 @@ def compare(edit_path: Path, ml_path: Path, output: Path) -> dict[str, Any]:
             }
         )
 
-    for player_id, status in [(value, "ONLY_EDIT") for value in only_edit] + [
-        (value, "ONLY_ML") for value in only_ml
-    ]:
-        source = edit_players.get(player_id) or ml_players[player_id]
+    for player_id in ambiguous_ids:
+        edit_group = edit_players[player_id]
+        ml_group = ml_players[player_id]
         player_rows.append(
             {
                 "player_id_decimal": player_id,
                 "player_id_hex": f"0x{player_id:08X}",
-                "edit_name": edit_players.get(player_id, {}).get("playerName", ""),
-                "ml_name": ml_players.get(player_id, {}).get("playerName", ""),
-                "match_status": status,
+                "edit_name": ";".join(sorted({str(player["playerName"]) for player in edit_group})),
+                "ml_name": ";".join(sorted({str(player["playerName"]) for player in ml_group})),
+                "match_status": "AMBIGUOUS_DUPLICATE",
+                "edit_instances": len(edit_group),
+                "ml_instances": len(ml_group),
                 "changed_bytes": "",
                 "changed_fields": "",
-                "edit_record_sha256": edit_players.get(player_id, {}).get("rawRecordSha256", ""),
-                "ml_record_sha256": ml_players.get(player_id, {}).get("rawRecordSha256", ""),
+                "edit_record_sha256": ";".join(player["rawRecordSha256"] for player in edit_group),
+                "ml_record_sha256": ";".join(player["rawRecordSha256"] for player in ml_group),
+            }
+        )
+
+    for player_id, status in [(value, "ONLY_EDIT") for value in only_edit] + [
+        (value, "ONLY_ML") for value in only_ml
+    ]:
+        edit_group = edit_players.get(player_id, [])
+        ml_group = ml_players.get(player_id, [])
+        player_rows.append(
+            {
+                "player_id_decimal": player_id,
+                "player_id_hex": f"0x{player_id:08X}",
+                "edit_name": ";".join(sorted({str(player["playerName"]) for player in edit_group})),
+                "ml_name": ";".join(sorted({str(player["playerName"]) for player in ml_group})),
+                "match_status": status,
+                "edit_instances": len(edit_group),
+                "ml_instances": len(ml_group),
+                "changed_bytes": "",
+                "changed_fields": "",
+                "edit_record_sha256": ";".join(player["rawRecordSha256"] for player in edit_group),
+                "ml_record_sha256": ";".join(player["rawRecordSha256"] for player in ml_group),
             }
         )
 
@@ -258,9 +287,12 @@ def compare(edit_path: Path, ml_path: Path, output: Path) -> dict[str, Any]:
             "fingerprintMismatchDisposition": "not byte-compared",
         },
         "counts": {
-            "editPlayers": len(edit_players),
-            "mlPlayers": len(ml_players),
+            "editRecords": len(edit_records_all),
+            "mlRecords": len(ml_records_all),
+            "editUniqueIds": len(edit_players),
+            "mlUniqueIds": len(ml_players),
             "commonIds": len(common_ids),
+            "ambiguousDuplicateIds": len(ambiguous_ids),
             "safeMatches": exact_matches + changed_matches,
             "exactMatches": exact_matches,
             "changedMatches": changed_matches,

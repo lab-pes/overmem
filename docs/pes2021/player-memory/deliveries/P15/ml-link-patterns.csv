@@ -1,0 +1,17 @@
+count,base_link_valid,roster_link_valid,aux_link_valid,base_equals_roster,aux_equals_roster,transfer_listed_candidate,loan_listed_candidate
+13013,True,True,False,True,False,False,False
+6097,False,False,False,True,True,False,False
+2393,True,True,False,True,False,True,True
+1581,True,True,False,True,False,True,False
+373,True,False,False,False,True,False,False
+372,True,True,False,True,False,False,True
+367,True,True,True,False,True,False,False
+51,True,False,False,False,True,True,False
+33,True,True,True,False,True,True,False
+17,True,True,True,False,True,False,True
+11,True,True,True,False,True,True,True
+7,True,False,False,False,True,False,True
+5,False,True,True,False,True,False,False
+2,True,True,True,True,False,False,False
+2,True,False,False,False,True,True,True
+1,True,True,True,True,False,True,False

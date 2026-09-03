@@ -67,8 +67,10 @@ public sealed class Pes2021PlayerCliSurfaceTests
         {
             ["name"] = "PES2021",
             ["control-player-id"] = "58120",
+            ["anchor-address"] = "0x12F8",
         });
-        Assert.NotNull(scanPlayers);
+        var parsedScan = Assert.IsType<Pes2021ScanPlayersCliCommand>(scanPlayers);
+        Assert.Equal(0x12F8UL, parsedScan.AnchorAddress);
 
         var query = extension.TryParse("pes2021-query-player", new Dictionary<string, string?>
         {
@@ -98,6 +100,47 @@ public sealed class Pes2021PlayerCliSurfaceTests
     {
         var extension = new Pes2021CliExtension();
         Assert.Null(extension.TryParse("pes2021-unknown", new Dictionary<string, string?> { ["pid"] = "1" }));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ExplicitCandidateSelectsOneOfTwoValidatedArenas()
+    {
+        var gateway = new FakeProcessMemoryGateway();
+        var profile = Pes2021PlayerProfileDefaults.BuildBuiltIn();
+        var region = BuildRegionWithFiveRecords();
+        gateway.MapRegion(0x1000, region);
+        gateway.MapRegion(0x10000, region);
+
+        var clock = new FakeSystemClock();
+        var attachment = new AttachmentInfo(AttachmentId.New(), 1234, "PES2021",
+            ProcessArchitecture.X64, clock.UtcNow);
+        var catalog = new Pes2021PlayerCatalog();
+        var service = new Pes2021PlayerCatalogService(
+            catalog,
+            new Pes2021PlayerAnchorFinder(gateway, clock),
+            new Pes2021PlayerRegionScanner(gateway, clock),
+            new Pes2021PlayerSessionCache(gateway),
+            gateway,
+            clock);
+        var process = new ProcessInstanceIdentity(
+            attachment.AttachmentId, attachment.ProcessId, attachment.ProcessStartedAtUtc, attachment.ProcessName);
+
+        var ambiguous = await service.RefreshAsync(
+            attachment.AttachmentId, process, profile, 58120, regions: null, default);
+        Assert.Empty(ambiguous.Players);
+
+        var selected = await service.RefreshAsync(
+            attachment.AttachmentId,
+            process,
+            profile,
+            58120,
+            selectedAnchorAddress: 0x12F8,
+            regions: null,
+            default);
+
+        Assert.Equal(5, selected.Players.Count);
+        Assert.Equal("0x12F8", selected.Session.AnchorAddress);
+        Assert.Equal(CacheDisposition.ProvidedAddress, selected.Session.CacheDisposition);
     }
 
     [Fact]

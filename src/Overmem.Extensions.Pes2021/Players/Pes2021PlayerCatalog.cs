@@ -95,11 +95,65 @@ public sealed class Pes2021PlayerCatalogService
         uint controlPlayerId,
         IReadOnlyList<MemoryRegionInfo>? regions,
         CancellationToken cancellationToken)
+        => await RefreshAsync(
+            attachmentId,
+            process,
+            profile,
+            controlPlayerId,
+            selectedAnchorAddress: null,
+            regions,
+            cancellationToken);
+
+    /// <summary>
+    /// Performs discovery within the single region containing an explicitly selected
+    /// anchor candidate. The finder must independently rediscover the exact same address
+    /// inside that region; arbitrary addresses are refused.
+    /// </summary>
+    public async Task<PlayerDiscoveryResult> RefreshAsync(
+        AttachmentId attachmentId,
+        ProcessInstanceIdentity process,
+        Pes2021PlayerProfile profile,
+        uint controlPlayerId,
+        ulong? selectedAnchorAddress,
+        IReadOnlyList<MemoryRegionInfo>? regions,
+        CancellationToken cancellationToken)
     {
+        IReadOnlyList<MemoryRegionInfo>? discoveryRegions = regions;
+        if (selectedAnchorAddress.HasValue)
+        {
+            var allRegions = regions ?? await _gateway.ListRegionsAsync(attachmentId, cancellationToken);
+            var selectedRegion = allRegions.SingleOrDefault(region =>
+                selectedAnchorAddress.Value >= region.BaseAddress
+                && selectedAnchorAddress.Value < checked(region.BaseAddress + region.RegionSize));
+            if (selectedRegion is null)
+            {
+                throw new InvalidOperationException(
+                    $"Selected player anchor 0x{selectedAnchorAddress.Value:X} is not inside a current process region.");
+            }
+
+            discoveryRegions = new[] { selectedRegion };
+        }
+
         var anchorResult = await _anchorFinder.FindAsync(
-            attachmentId, process, profile, controlPlayerId, regions, cancellationToken);
+            attachmentId, process, profile, controlPlayerId, discoveryRegions, cancellationToken);
+        if (selectedAnchorAddress.HasValue)
+        {
+            var expected = $"0x{selectedAnchorAddress.Value:X}";
+            if (anchorResult.Ambiguous
+                || !string.Equals(anchorResult.AnchorAddress, expected, System.StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Selected player anchor {expected} was not independently rediscovered as the unique validated anchor in its region.");
+            }
+
+            anchorResult = anchorResult with
+            {
+                Session = anchorResult.Session with { CacheDisposition = CacheDisposition.ProvidedAddress }
+            };
+        }
+
         var scanResult = await _regionScanner.ScanAsync(
-            attachmentId, process, profile, anchorResult.Session, regions, cancellationToken);
+            attachmentId, process, profile, anchorResult.Session, discoveryRegions, cancellationToken);
         _catalog.Replace(scanResult);
         return scanResult;
     }

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "pes2021.player-memory.ml-arena-evidence.v1",
+  "capturedContext": "MASTER_LEAGUE_LOADED",
+  "safety": {
+    "readOnly": true,
+    "memoryWrites": 0
+  },
+  "input": {
+    "path": "files/pes2021/player-memory/codex-live-ml-candidate-b-2026-09-03.json",
+    "sha256": "44db28e74c717ad5319fb2ca3c6c2c8df7edf14ce20311da559712729b424999"
+  },
+  "session": {
+    "process": {
+      "attachmentId": {
+        "value": "98071057-969b-4001-9375-05a0e61d5498"
+      },
+      "processId": 25604,
+      "processStartedAtUtc": "2026-09-02T22:16:31.5790898+00:00",
+      "processName": "PES2021"
+    },
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "0.1.0-builtin",
+    "profileSha256": "",
+    "recordStride": 380,
+    "arenaBaseAddress": "0x7FF4D9950010",
+    "arenaStopAddress": "0x7FF4DA42F4CC",
+    "anchorAddress": "0x7FF4D9950010",
+    "anchorPlayerId": 58120,
+    "anchorPlayerNameFingerprint": "Piero Hincapié",
+    "validationSampleSha256": "488033fe2f2b3550f3b313fcf840f8114d06376d6019c829655f831a2c71d363",
+    "validatedAtUtc": "2026-09-03T20:10:06.0002662+00:00",
+    "cacheDisposition": "PROVIDED_ADDRESS"
+  },
+  "arenaCoverage": {
+    "regionBaseAddress": "0x7FF4D9950000",
+    "regionStopAddress": "0x7FF4DB1D0000",
+    "firstRecordAddress": "0x7FF4D9950010",
+    "arenaBaseAddress": "0x7FF4D9950010",
+    "arenaStopAddress": "0x7FF4DA42F4CC",
+    "recordStride": 380,
+    "anchorSlotIndex": 0,
+    "populatedSlots": 24325,
+    "emptyReservedSlots": 5676,
+    "theoreticalSlots": 30001,
+    "unaccountedSlots": 0,
+    "emptyRecordSha256": "c80ea0b4665a3928b96d4c7972b37de66128b57ca0979accfdc1485857c16a0e",
+    "boundaryClassification": "NON_PLAYER_DATA"
+  },
+  "population": {
+    "records": 24325,
+    "uniqueIds": 24322,
+    "duplicateIds": 3,
+    "duplicateRecordsBeyondFirst": 3
+  },
+  "occupancy": {
+    "positiveMarketValue": 1699,
+    "positiveAnnualSalary": 24325,
+    "plausibleContractDate": 19517,
+    "baseLink12cValid": 18223,
+    "rosterLink164Valid": 17795,
+    "auxLink160Valid": 436,
+    "baseRosterMismatch": 428,
+    "transferListedBit": 4072,
+    "loanListedBit": 2802,
+    "bothListingBits": 2406
+  },
+  "evidenceLabels": {
+    "arenaClassification": "CONFIRMED_STRUCTURAL_ML_CANDIDATE",
+    "salaryDateMarket": "CANDIDATE_CT_SEMANTICS",
+    "baseLink12c": "UNKNOWN",
+    "auxLink160": "UNKNOWN",
+    "rosterLink164": "CANDIDATE_CURRENT_ML_ROSTER_RELATION",
+    "actualLoanRelationship": "UNKNOWN"
+  }
+}

@@ -188,6 +188,7 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
             "pes2021-scan-players" => new Pes2021ScanPlayersCliCommand(
                 CliOptionParser.ParseSelector(options),
                 CliOptionParser.ParseUInt32(CliOptionParser.GetRequiredOption(options, "control-player-id")),
+                CliOptionParser.ParseOptionalUnsignedLong(CliOptionParser.GetOptionalOption(options, "anchor-address")),
                 CliOptionParser.GetOptionalOption(options, "profile-file"),
                 CliOptionParser.GetOptionalOption(options, "output-file")),
             "pes2021-query-player" => new Pes2021QueryPlayerCliCommand(
@@ -398,6 +399,7 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                     BuildProcessIdentity(attachment),
                     LoadPlayerProfile(scanPlayers.ProfileFile),
                     scanPlayers.ControlPlayerId,
+                    scanPlayers.AnchorAddress,
                     regions: null,
                     cancellationToken), stdout, scanPlayers.OutputFile, cancellationToken),
             Pes2021QueryPlayerCliCommand queryPlayer => ExecutePlayerAttachmentAsync(queryPlayer.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), services.GetRequiredService<Pes2021PlayerCatalogService>(), async attachment =>
@@ -486,7 +488,7 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
             "  pes2021-extract-competition-fixtures --pid <id>|--name <process> --competition-id <id> [--team-id <id>] [--team-liga <id>] [--calendar-base-address <value>] [--competition-block-base-address <value>] [--anchor-address <value>] [--profile-file <path>] [--competition-map-file <path>] [--team-map-file <path>] [--block-records <count>] [--record-limit <count>] [--output-file <path>]",
             "  pes2021-scan-club-relations --pid <id>|--name <process> --team-catalog <path> --competition-map <path> --output <dir> [--mode baseline|layout] [--block-bytes <bytes>] [--restart-timeout-seconds <seconds>] [--input <observations.csv>] [--window-sizes <s1,s2,...>]",
             "  pes2021-find-player-anchor --pid <id>|--name <process> --control-player-id <id> [--profile-file <path>] [--output-file <path>]",
-            "  pes2021-scan-players --pid <id>|--name <process> --control-player-id <id> [--profile-file <path>] [--output-file <path>]",
+            "  pes2021-scan-players --pid <id>|--name <process> --control-player-id <id> [--anchor-address <validated-candidate>] [--profile-file <path>] [--output-file <path>]",
             "  pes2021-query-player --pid <id>|--name <process> --player-id <id> [--profile-file <path>]",
             "  pes2021-export-player-catalog --pid <id>|--name <process> --control-player-id <id> --output <path> [--profile-file <path>]"
         ];

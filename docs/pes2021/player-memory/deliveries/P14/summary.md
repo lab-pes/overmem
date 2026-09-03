@@ -12,7 +12,7 @@ Estado: **IMPLEMENTADO E VALIDADO; aguarda apenas um dump ML real**
 2. fingerprint normalizado do nome como trava de identidade;
 3. SHA-256 e comprimento de 380 bytes para validar cada registro antes da comparação.
 
-Se o mesmo ID aparecer com outro fingerprint, o registro recebe `FINGERPRINT_MISMATCH` e seus bytes não são comparados automaticamente.
+Se o mesmo ID aparecer com outro fingerprint, o registro recebe `FINGERPRINT_MISMATCH` e seus bytes não são comparados automaticamente. IDs repetidos são preservados como `AMBIGUOUS_DUPLICATE`; nenhuma das instâncias é escolhida silenciosamente.
 
 ## Saídas
 
@@ -34,7 +34,7 @@ A fixture cobre:
 - jogador existente apenas na ML;
 - ID com bit alto;
 - mesmo ID com fingerprint incompatível;
-- rejeição de IDs duplicados.
+- preservação e isolamento de IDs duplicados.
 
 ## Validação em escala real
 
@@ -56,7 +56,7 @@ Somente a captura de um dump com uma Master Liga carregada. Depois disso, o comp
 
 ## Limites
 
-- IDs duplicados em qualquer entrada são rejeitados, não escolhidos arbitrariamente.
+- IDs duplicados são relatados como ambíguos e excluídos do diff automático.
 - Mudança de nome com o mesmo ID exige revisão humana.
 - Campos não modelados aparecem no relatório por offset, mas permanecem semanticamente desconhecidos.
 - O comparador é somente leitura de arquivos e não contém escrita em memória.

@@ -12,7 +12,7 @@ PASS only EDIT
 PASS only ML
 PASS high-bit opaque u32 ID
 PASS fingerprint mismatch is not byte-compared
-PASS duplicate IDs rejected
+PASS duplicate IDs preserved as ambiguous and excluded from automatic diff
 
 Real-scale EDIT restart integration:
 PASS input records = 25005 + 25005

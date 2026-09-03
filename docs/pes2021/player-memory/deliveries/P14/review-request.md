@@ -4,7 +4,7 @@
 
 1. Cada registro é validado por comprimento e SHA-256 antes do diff.
 2. IDs são tratados como `u32` opacos, inclusive com bits altos.
-3. IDs duplicados são rejeitados.
+3. IDs duplicados são preservados, relatados e excluídos da associação automática.
 4. Fingerprint incompatível impede comparação automática dos bytes.
 5. Todos os 380 offsets são contabilizados.
 6. Os rótulos semânticos mantêm seu status de evidência de origem.

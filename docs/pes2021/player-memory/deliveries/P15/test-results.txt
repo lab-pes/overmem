@@ -1,0 +1,39 @@
+P15 first live ML arena
+Date: 2026-09-03
+
+Anchor discovery:
+PASS two structurally valid candidates found
+PASS both candidates score 16/16
+PASS ambiguous automatic selection refused
+
+Explicit candidate selection:
+PASS selected address must belong to current process region
+PASS exact address is independently rediscovered in selected region
+PASS arbitrary/non-validated address is refused by implementation
+
+Arena A:
+PASS records = 25005
+PASS unique IDs = 25005
+PASS duplicate IDs = 0
+PASS EDIT exact matches = 24998
+PASS changed records = 7
+
+Arena B:
+PASS records = 24325
+PASS unique IDs = 24322
+PASS duplicate IDs = 3
+PASS safe EDIT associations = 24319
+PASS changed safe associations = 24319
+PASS changed offsets = 158
+PASS changed modeled fields = 18
+
+Regression suites:
+PASS Overmem.Tests = 62
+PASS Overmem.Extensions.Pes2021.Tests = 340
+PASS .NET total = 402
+PASS Python comparator tests = 2
+
+Safety:
+PASS memory writes = 0
+PASS Lua not executed
+PASS Cheat Engine not executed

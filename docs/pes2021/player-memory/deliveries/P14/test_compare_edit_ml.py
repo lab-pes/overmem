@@ -70,8 +70,8 @@ class CompareEditMlTests(unittest.TestCase):
 
             evidence = MODULE.compare(edit_path, ml_path, output)
 
-            self.assertEqual(4, evidence["counts"]["editPlayers"])
-            self.assertEqual(4, evidence["counts"]["mlPlayers"])
+            self.assertEqual(4, evidence["counts"]["editRecords"])
+            self.assertEqual(4, evidence["counts"]["mlRecords"])
             self.assertEqual(1, evidence["counts"]["exactMatches"])
             self.assertEqual(1, evidence["counts"]["changedMatches"])
             self.assertEqual(1, evidence["counts"]["fingerprintMismatches"])
@@ -89,10 +89,22 @@ class CompareEditMlTests(unittest.TestCase):
             field_csv = (output / "player-field-diffs.csv").read_text(encoding="utf-8")
             self.assertIn("marketValue", field_csv)
 
-    def test_duplicate_ids_are_rejected(self):
+    def test_duplicate_ids_are_preserved_and_excluded_from_automatic_diff(self):
         duplicate = player(7, "Duplicate")
-        with self.assertRaisesRegex(ValueError, "duplicate player IDs"):
-            MODULE.index_players([duplicate, duplicate], "fixture")
+        grouped = MODULE.group_players([duplicate, duplicate], "fixture")
+        self.assertEqual(2, len(grouped[7]))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            edit_path = root / "edit.json"
+            ml_path = root / "ml.json"
+            edit_path.write_text(json.dumps({"players": [duplicate]}), encoding="utf-8")
+            ml_path.write_text(json.dumps({"players": [duplicate, duplicate]}), encoding="utf-8")
+            evidence = MODULE.compare(edit_path, ml_path, root / "out")
+            self.assertEqual(1, evidence["counts"]["ambiguousDuplicateIds"])
+            self.assertEqual(0, evidence["counts"]["safeMatches"])
+            player_csv = (root / "out" / "player-diff-summary.csv").read_text(encoding="utf-8")
+            self.assertIn("AMBIGUOUS_DUPLICATE", player_csv)
 
 
 if __name__ == "__main__":

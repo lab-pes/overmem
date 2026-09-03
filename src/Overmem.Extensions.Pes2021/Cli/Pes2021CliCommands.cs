@@ -179,6 +179,7 @@ public sealed record Pes2021FindPlayerAnchorCliCommand(
 public sealed record Pes2021ScanPlayersCliCommand(
     ProcessSelector Selector,
     uint ControlPlayerId,
+    ulong? AnchorAddress,
     string? ProfileFile,
     string? OutputFile) : CliCommand;
 
