@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "pes2021.player-memory.edit-offline-atlas.v1",
+  "safety": {
+    "offlineOnly": true,
+    "processAttachment": false,
+    "memoryReads": 0,
+    "memoryWrites": 0
+  },
+  "inputs": {
+    "dump": {
+      "path": "files/pes2021/player-memory/codex-live-edit-restart-2026-09-02.json",
+      "sha256": "6d7e922c28d3120bcab2b819783a716596e5c71d10b18826cf9ce85d6a5fbea4"
+    },
+    "profile": {
+      "path": "files/pes2021/player-memory/pes2021-player-edit-v1.json",
+      "sha256": "f28bd53115ed951147118a7cdc96573cb238fef047c7556a3f3f0c231e07f278"
+    },
+    "ct": {
+      "path": "files/PES 2021 - v21.1.0.CT",
+      "sha256": "da67eb5c8f7b13243ad5be654d618ea5e4baeb52449fecbc453144af6c89af7c"
+    }
+  },
+  "population": {
+    "players": 25005,
+    "uniquePlayerIds": 25005,
+    "recordStride": 380,
+    "rawRecordsValidated": 25005
+  },
+  "restartIdentity": {
+    "performed": true,
+    "baselinePath": "files/pes2021/player-memory/codex-live-edit-operational.json",
+    "baselineSha256": "a5cdc008919a1fcc97aa810540fe5f535430a83c6210a95498427d0bbe235e3b",
+    "currentCount": 25005,
+    "baselineCount": 25005,
+    "commonPlayerIds": 25005,
+    "onlyCurrent": 0,
+    "onlyBaseline": 0,
+    "hashMismatches": 0,
+    "mismatchedPlayerIds": []
+  },
+  "ctMatrix": {
+    "ptrPlayerEntries": 128,
+    "playerFieldEntries": 127,
+    "boundaryMarkerEntries": 1,
+    "uniqueOffsets": 66,
+    "recordBytesTouchedByCt": 126,
+    "recordBytesNotTouchedByCt": 254,
+    "profileBytesModeled": 226,
+    "outOfBoundsEntries": 1,
+    "evidenceStatusCounts": {
+      "CANDIDATE": 22,
+      "CONFIRMED": 4,
+      "UNKNOWN": 101
+    },
+    "warning": "CT labels are hypotheses; occupancy does not confirm semantics."
+  },
+  "recordByteCensus": {
+    "totalBytes": 380,
+    "states": {
+      "LABELLED_UNKNOWN": 44,
+      "PROFILE_CANDIDATE": 153,
+      "PROFILE_CONFIRMED": 67,
+      "UNLABELLED": 116
+    },
+    "warning": "LABELLED_UNKNOWN means a structural label exists, not that its semantics are proven."
+  },
+  "goldenCorpus": {
+    "count": 30,
+    "playerIds": [
+      58120,
+      108959,
+      127544,
+      126689,
+      33739,
+      132155,
+      114506,
+      120246,
+      59801,
+      40352,
+      111207,
+      1073871551,
+      1073871615,
+      2147483710,
+      296,
+      811,
+      1675,
+      104268,
+      101888,
+      138218,
+      125011,
+      125693,
+      557,
+      816,
+      840,
+      877,
+      879,
+      972,
+      1624,
+      1630
+    ],
+    "selection": "named controls plus deterministic boundary and structural-diversity cases"
+  }
+}
