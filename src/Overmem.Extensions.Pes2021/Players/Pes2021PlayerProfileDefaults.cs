@@ -328,6 +328,7 @@ public static class Pes2021PlayerProfileDefaults
             MinimumAnchorScore: 5,
             MediumScore: 8,
             HighScore: 12,
+            MinimumControlsForStridePromotion: 3,
             ControlPlayerIds: new uint[] { 58120 });
         var limits = new Pes2021PlayerLimits(
             DefaultBlockRecords: 256,

@@ -128,6 +128,7 @@ public sealed record Pes2021PlayerAnchorValidation(
     int MinimumAnchorScore,
     int MediumScore,
     int HighScore,
+    int MinimumControlsForStridePromotion,
     IReadOnlyList<uint> ControlPlayerIds);
 
 /// <summary>
