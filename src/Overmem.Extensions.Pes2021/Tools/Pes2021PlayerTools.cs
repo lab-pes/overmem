@@ -60,4 +60,48 @@ public sealed class Pes2021PlayerTools(
     [McpServerTool(Name = "pes2021_query_player"), Description("Query the in-memory catalog by player ID. Returns ambiguous results when duplicates exist.")]
     public PlayerQueryResult QueryPlayer([Description("Player ID to look up.")] int playerId)
         => queryService.QueryByPlayerId((uint)playerId);
+
+    // --- Family Discovery System Tools ---
+
+    [McpServerTool(Name = "pes2021_discover_player_families"), Description("Discover all player families using the multi-anchor FDS scanner.")]
+    public Task<string> DiscoverPlayerFamilies(
+        [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("Optional profile path.")] string? profilePath = null,
+        [Description("Region policy to use (DefaultPlayerArena, All, IncludeMapped, etc).")] string policy = "DefaultPlayerArena",
+        [Description("Maximum bytes to read. 0 = unlimited.")] long maxBytes = 0,
+        [Description("Timeout in milliseconds. 0 = unlimited.")] int timeoutMs = 0,
+        [Description("Output mode (Summary, Compact, Full, Hits, Coverage).")] string outputMode = "Summary",
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+    }
+
+    [McpServerTool(Name = "pes2021_inventory_player_hits"), Description("Inventory all hits using the FDS scanner.")]
+    public Task<string> InventoryPlayerHits(
+        [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("Optional profile path.")] string? profilePath = null,
+        [Description("Region policy to use.")] string policy = "DefaultPlayerArena",
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+    }
+
+    [McpServerTool(Name = "pes2021_compare_player_sessions"), Description("Compare two FDS catalogs.")]
+    public Task<string> ComparePlayerSessions(
+        [Description("Path to the before catalog.")] string beforeCatalogPath,
+        [Description("Path to the after catalog.")] string afterCatalogPath,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+    }
+
+    [McpServerTool(Name = "pes2021_export_family_catalog"), Description("Export the current FDS catalog to a specific path.")]
+    public Task<string> ExportFamilyCatalog(
+        [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("Path to save the catalog.")] string outputPath,
+        [Description("Optional profile path.")] string? profilePath = null,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+    }
 }

@@ -17,6 +17,32 @@ public sealed record Pes2021FindCalendarBaseCliCommand(
     string? ModuleName,
     int MaxResults) : CliCommand;
 
+// --- Family Discovery System Commands ---
+
+public sealed record Pes2021DiscoverPlayerFamiliesCliCommand(
+    ProcessSelector Selector,
+    string? ProfilePath,
+    string Policy = "DefaultPlayerArena",
+    long MaxBytes = 0,
+    int TimeoutMs = 0,
+    string OutputMode = "Summary") : CliCommand;
+
+public sealed record Pes2021InventoryPlayerHitsCliCommand(
+    ProcessSelector Selector,
+    string? ProfilePath,
+    string Policy = "DefaultPlayerArena") : CliCommand;
+
+public sealed record Pes2021ComparePlayerSessionsCliCommand(
+    string BeforeCatalogPath,
+    string AfterCatalogPath) : CliCommand;
+
+public sealed record Pes2021ExportFamilyCatalogCliCommand(
+    ProcessSelector Selector,
+    string OutputPath,
+    string? ProfilePath) : CliCommand;
+
+// --- Calendar Commands ---
+
 public sealed record Pes2021DumpCalendarDateCliCommand(
     ProcessSelector Selector,
     int Year,
