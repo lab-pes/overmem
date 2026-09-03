@@ -101,7 +101,7 @@ public sealed class FakeProcessMemoryGateway : IProcessMemoryGateway
             }
         }
 
-        return new byte[size];
+        throw new System.InvalidOperationException("Unmapped memory read.");
     }
 
     private KeyValuePair<ulong, byte[]>? FindSegmentFor(ulong address)
