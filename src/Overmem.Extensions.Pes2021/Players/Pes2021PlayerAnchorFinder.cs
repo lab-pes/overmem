@@ -53,7 +53,8 @@ public sealed class Pes2021PlayerAnchorFinder
         var stride = profile.Stride;
         var playerIdBytes = EncodeUInt32LittleEndian(playerId);
         var candidates = new List<PlayerAnchorCandidate>();
-        var readCalls = 0;
+        var seenCandidateAddresses = new HashSet<ulong>();
+        var playerIdOffset = profile.RecordLayout.Fields.Single(f => f.Name == "playerId").Offset;
 
         foreach (var region in acceptedRegions)
         {
@@ -68,8 +69,6 @@ public sealed class Pes2021PlayerAnchorFinder
 
             var overlap = stride - 1;
             var cursor = regionStart;
-            byte[] previousTail = Array.Empty<byte>();
-
             while (cursor < regionStop)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -81,50 +80,55 @@ public sealed class Pes2021PlayerAnchorFinder
 
                 collector.AddReadCall(bytesToRequest, bytesToRequest);
                 var buffer = await ReadBytesAsync(attachmentId, cursor, bytesToRequest, cancellationToken);
-                readCalls++;
                 if (buffer is null)
                 {
                     collector.AddRejection(PlayerRecordRejectionReasons.PartialRead);
                     break;
                 }
 
-                var combined = Combine(previousTail, buffer);
-                var searchWindow = combined.Length - (stride - 1);
-                if (searchWindow <= 0)
+                // Search the ID byte pattern at every byte. The record array is not
+                // guaranteed to start at the VirtualQuery region base (live EDIT uses
+                // regionBase + 0x10), so stepping from the region base by stride loses
+                // the complete arena.
+                var searchAt = 0;
+                while (searchAt <= buffer.Length - playerIdBytes.Length)
                 {
-                    previousTail = combined;
-                    cursor = checked(cursor + (ulong)primaryLength);
-                    if (primaryLength == 0) break;
-                    continue;
-                }
+                    var hit = Array.IndexOf(buffer, playerIdBytes[0], searchAt);
+                    if (hit < 0 || hit > buffer.Length - playerIdBytes.Length) break;
+                    searchAt = hit + 1;
 
-                var playerIdOffset = profile.RecordLayout.Fields.Single(f => f.Name == "playerId").Offset;
-                for (var slot = 0; slot < (combined.Length - stride) / stride + 1; slot++)
-                {
-                    var recordStart = slot * stride;
-                    var playerIdSlot = recordStart + playerIdOffset;
-                    if (playerIdSlot + 4 > combined.Length) break;
-
-                    if (combined[playerIdSlot] != playerIdBytes[0]
-                        || combined[playerIdSlot + 1] != playerIdBytes[1]
-                        || combined[playerIdSlot + 2] != playerIdBytes[2]
-                        || combined[playerIdSlot + 3] != playerIdBytes[3])
+                    if (buffer[hit + 1] != playerIdBytes[1]
+                        || buffer[hit + 2] != playerIdBytes[2]
+                        || buffer[hit + 3] != playerIdBytes[3])
                     {
                         continue;
                     }
 
-                    var recordAddress = checked(cursor + (ulong)recordStart - (ulong)previousTail.Length);
-                    var slice = new byte[stride];
-                    Array.Copy(combined, recordStart, slice, 0, stride);
+                    var recordStart = hit - playerIdOffset;
+                    if (recordStart < 0 || recordStart >= primaryLength || recordStart + stride > buffer.Length)
+                    {
+                        continue;
+                    }
 
-                    var candidate = ScoreCandidate(slice, recordAddress, playerId, profile);
+                    var recordAddress = checked(cursor + (ulong)recordStart);
+                    if (!seenCandidateAddresses.Add(recordAddress)) continue;
+
+                    var slice = new byte[stride];
+                    Array.Copy(buffer, recordStart, slice, 0, stride);
+
+                    var candidate = await ScoreCandidateAsync(
+                        attachmentId,
+                        slice,
+                        recordAddress,
+                        regionStart,
+                        regionStop,
+                        playerId,
+                        profile,
+                        cancellationToken);
                     if (candidate is not null) candidates.Add(candidate);
                     else collector.AddRejection(PlayerRecordRejectionReasons.NeighborStrideMismatch);
                 }
 
-                var overlapStart = Math.Max(0, combined.Length - overlap);
-                previousTail = new byte[overlap];
-                Array.Copy(combined, overlapStart, previousTail, 0, overlap);
                 cursor = checked(cursor + (ulong)primaryLength);
                 if (primaryLength == 0) break;
             }
@@ -155,19 +159,8 @@ public sealed class Pes2021PlayerAnchorFinder
                 }
                 else
                 {
-                    var earliest = ties.OrderBy(t => ParseHex(t.Address)).First();
-                    var allAtEarliestAddress = ties.Where(t => ParseHex(t.Address) == ParseHex(earliest.Address)).ToList();
-                    if (allAtEarliestAddress.Count == 1)
-                    {
-                        winner = earliest;
-                        ambiguous = false;
-                    }
-                    else
-                    {
-                        winner = earliest;
-                        ambiguous = true;
-                        collector.AddRejection("ambiguous_tie");
-                    }
+                    ambiguous = true;
+                    collector.AddRejection("ambiguous_tie");
                 }
             }
             else
@@ -183,11 +176,18 @@ public sealed class Pes2021PlayerAnchorFinder
         var confidence = ComputeConfidence(winner, ordered, profile.AnchorValidation);
         collector.CacheDisposition = winner is null ? CacheDisposition.Refused : CacheDisposition.Discovered;
 
-        var arenaBase = acceptedRegions.Count > 0 ? acceptedRegions[0].BaseAddress : 0UL;
-        var arenaStop = acceptedRegions.Count > 0
-            ? checked(acceptedRegions[acceptedRegions.Count - 1].BaseAddress
-                + acceptedRegions[acceptedRegions.Count - 1].RegionSize)
-            : 0UL;
+        MemoryRegionInfo? anchorRegion = null;
+        if (winner is not null && ParseHex(winner.Address, out var winnerAddress))
+        {
+            anchorRegion = acceptedRegions.FirstOrDefault(region =>
+                winnerAddress >= region.BaseAddress
+                && winnerAddress < checked(region.BaseAddress + region.RegionSize));
+        }
+
+        var arenaBase = anchorRegion?.BaseAddress ?? 0UL;
+        var arenaStop = anchorRegion is null
+            ? 0UL
+            : checked(anchorRegion.BaseAddress + anchorRegion.RegionSize);
         var validationSampleSha256 = winner is null
             ? string.Empty
             : await HashAnchorWindowAsync(attachmentId, winner.Address, profile, cancellationToken);
@@ -239,30 +239,45 @@ public sealed class Pes2021PlayerAnchorFinder
             Diagnostics: finalDiagnostics);
     }
 
-    private static PlayerAnchorCandidate? ScoreCandidate(
+    private async Task<PlayerAnchorCandidate?> ScoreCandidateAsync(
+        AttachmentId attachmentId,
         byte[] recordBytes,
         ulong candidateAddress,
+        ulong regionStart,
+        ulong regionStop,
         uint expectedPlayerId,
-        Pes2021PlayerProfile profile)
+        Pes2021PlayerProfile profile,
+        CancellationToken cancellationToken)
     {
         var parse = Pes2021PlayerRecordParser.TryParse(recordBytes, 0, candidateAddress, profile);
         if (!parse.Success || parse.Record is null) return null;
         if (parse.Record.PlayerId != expectedPlayerId) return null;
 
-        var reasons = new List<string> { "player_id_match", "cheap_validation_passed" };
-        var score = 5;
+        var validation = Pes2021PlayerRecordValidator.Validate(parse.Record, profile);
+        if (!validation.Accept) return null;
+
+        var reasons = new List<string> { "player_id_match", "cheap_validation_passed", "validator_accepted" };
+        var score = 5 + validation.Score;
         if (!string.IsNullOrWhiteSpace(parse.Record.PlayerName))
         {
             score += 2;
             reasons.Add("player_name_present");
         }
 
-        var validation = Pes2021PlayerRecordValidator.Validate(parse.Record, profile);
-        if (validation.Accept)
+        var forward = await CountPlausibleNeighborsAsync(
+            attachmentId, candidateAddress, +1, regionStart, regionStop,
+            profile.AnchorValidation.RecordsAfter, profile, cancellationToken);
+        var backward = await CountPlausibleNeighborsAsync(
+            attachmentId, candidateAddress, -1, regionStart, regionStop,
+            profile.AnchorValidation.RecordsBefore, profile, cancellationToken);
+        var runLength = 1 + forward + backward;
+        if (runLength < profile.AnchorValidation.MinimumRun)
         {
-            score += 3;
-            reasons.Add("validator_accepted");
+            return null;
         }
+
+        score += Math.Min(4, forward + backward);
+        reasons.Add("neighbor_stride_confirmed");
 
         return new PlayerAnchorCandidate(
             Address: string.Create(CultureInfo.InvariantCulture, $"0x{candidateAddress:X}"),
@@ -270,8 +285,49 @@ public sealed class Pes2021PlayerAnchorFinder
             Fingerprint: parse.Record.PlayerName ?? string.Empty,
             Score: score,
             Reasons: reasons,
-            PlausibleRunForward: 0,
-            PlausibleRunBackward: 0);
+            PlausibleRunForward: forward,
+            PlausibleRunBackward: backward);
+    }
+
+    private async Task<int> CountPlausibleNeighborsAsync(
+        AttachmentId attachmentId,
+        ulong anchorAddress,
+        int direction,
+        ulong regionStart,
+        ulong regionStop,
+        int limit,
+        Pes2021PlayerProfile profile,
+        CancellationToken cancellationToken)
+    {
+        var count = 0;
+        for (var index = 1; index <= limit; index++)
+        {
+            ulong address;
+            var distance = checked((ulong)(index * profile.Stride));
+            if (direction < 0)
+            {
+                if (anchorAddress < regionStart + distance) break;
+                address = anchorAddress - distance;
+            }
+            else
+            {
+                address = checked(anchorAddress + distance);
+                if (address + (ulong)profile.Stride > regionStop) break;
+            }
+
+            var bytes = await ReadBytesAsync(attachmentId, address, profile.Stride, cancellationToken);
+            if (bytes is null || bytes.Length < profile.Stride) break;
+            var parsed = Pes2021PlayerRecordParser.TryParse(bytes, index, address, profile);
+            if (!parsed.Success || parsed.Record is null
+                || !Pes2021PlayerRecordValidator.Validate(parsed.Record, profile).Accept)
+            {
+                break;
+            }
+
+            count++;
+        }
+
+        return count;
     }
 
     private async Task<string> HashAnchorWindowAsync(
@@ -414,14 +470,6 @@ public sealed class Pes2021PlayerAnchorFinder
         Span<byte> span = stackalloc byte[4];
         BinaryPrimitives.WriteUInt32LittleEndian(span, value);
         return span.ToArray();
-    }
-
-    private static byte[] Combine(byte[] head, byte[] tail)
-    {
-        var combined = new byte[head.Length + tail.Length];
-        Buffer.BlockCopy(head, 0, combined, 0, head.Length);
-        Buffer.BlockCopy(tail, 0, combined, head.Length, tail.Length);
-        return combined;
     }
 
     private static bool ParseHex(string text, out ulong value)

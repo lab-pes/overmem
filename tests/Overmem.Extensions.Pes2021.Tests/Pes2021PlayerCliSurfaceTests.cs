@@ -67,7 +67,6 @@ public sealed class Pes2021PlayerCliSurfaceTests
         {
             ["name"] = "PES2021",
             ["control-player-id"] = "58120",
-            ["max-records"] = "1000",
         });
         Assert.NotNull(scanPlayers);
 
@@ -90,6 +89,8 @@ public sealed class Pes2021PlayerCliSurfaceTests
         Assert.Contains(extension.GetHelpLines(), line => line.Contains("pes2021-scan-players"));
         Assert.Contains(extension.GetHelpLines(), line => line.Contains("pes2021-query-player"));
         Assert.Contains(extension.GetHelpLines(), line => line.Contains("pes2021-export-player-catalog"));
+        Assert.Null(extension.TryParse("pes2021-stride-scan-players", new Dictionary<string, string?>()));
+        Assert.Null(extension.TryParse("pes2021-scan-all-arenas", new Dictionary<string, string?>()));
     }
 
     [Fact]
@@ -100,7 +101,7 @@ public sealed class Pes2021PlayerCliSurfaceTests
     }
 
     [Fact]
-    public void ExportCatalog_WritesAtomicFile_EndToEnd()
+    public async Task ExportCatalog_WritesAtomicFile_EndToEnd()
     {
         var gateway = new FakeProcessMemoryGateway();
         var profile = Pes2021PlayerProfileDefaults.BuildBuiltIn();
@@ -120,9 +121,9 @@ public sealed class Pes2021PlayerCliSurfaceTests
         var attachment = new AttachmentInfo(AttachmentId.New(), 1234, "PES2021",
             ProcessArchitecture.X64, clock.UtcNow);
 
-        var discovery = service.RefreshAsync(attachment.AttachmentId,
+        var discovery = await service.RefreshAsync(attachment.AttachmentId,
             new ProcessInstanceIdentity(attachment.AttachmentId, attachment.ProcessId, attachment.ProcessStartedAtUtc, attachment.ProcessName),
-            profile, 58120, regions: null, default).GetAwaiter().GetResult();
+            profile, 58120, regions: null, default);
 
         var export = Pes2021PlayerCatalogExporter.Build(discovery);
         Assert.Equal(5, export.Players.Count);

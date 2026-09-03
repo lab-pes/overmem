@@ -180,8 +180,7 @@ public sealed record Pes2021ScanPlayersCliCommand(
     ProcessSelector Selector,
     uint ControlPlayerId,
     string? ProfileFile,
-    string? OutputFile,
-    int MaxRecords) : CliCommand;
+    string? OutputFile) : CliCommand;
 
 public sealed record Pes2021QueryPlayerCliCommand(
     ProcessSelector Selector,
@@ -193,16 +192,3 @@ public sealed record Pes2021ExportPlayerCatalogCliCommand(
     uint ControlPlayerId,
     string? ProfileFile,
     string OutputFile) : CliCommand;
-
-public sealed record Pes2021StrideScanPlayersCliCommand(
-    ProcessSelector Selector,
-    ulong StartAddress,
-    ulong StopAddress,
-    int Stride,
-    int MaxRecords) : CliCommand;
-
-public sealed record Pes2021ScanAllArenasCliCommand(
-    ProcessSelector Selector,
-    int Stride,
-    int MaxRecordsPerArena,
-    ulong MinRegionSize) : CliCommand;

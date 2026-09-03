@@ -1,0 +1,89 @@
+================================================================================
+VERIFICACAO DE HASHES DAS FONTES EXTERNAS (2026-08-31)
+================================================================================
+Algorithm       Hash                                                             Path
+---------       ----                                                             ----
+SHA256          27A8486E0145725EB8D9C370566038C50B98BC5E5AEB8009927E0C076DF1D809 C:\Users\Willian\Documents\My Cheat Tables\scripts\players\ZerarValorMercado.lua
+SHA256          A3F540FCE2E698914BF2DB4669CE1082F2FB931DD62F1CF6D80F4E407C7B1CC7 C:\Users\Willian\Documents\My Cheat Tables\scripts\players\player_tool\operations.lua
+SHA256          D9F9B7919BF4CD8EAAF07983E23397FE1580EE2820D088E814A97A73563AD115 C:\Users\Willian\Documents\My Cheat Tables\scripts\players\player_tool\reader_v5.lua
+SHA256          6BD22B451085FE4D4209D7DB5FA93152CE78683439D760CA88D33BFC7144050E C:\Users\Willian\Documents\My Cheat Tables\scripts\players\player_tool\schema_v5.lua
+SHA256          DA67EB5C8F7B13243AD5BE654D618EA5E4BAEB52449FECBC453144AF6C89AF7C C:\Users\Willian\Documents\My Cheat Tables\work\cheat-engine\tables\PES 2021 - v21.1.0.CT
+SHA256          0C771B409267009D28C6CC21C093113FB23749A97532676F07CB22EEA7047408 C:\Users\Willian\Documents\My Cheat Tables\jogadores_pes2021.txt
+
+================================================================================
+VERIFICACAO DE HASHES DOS ARQUIVOS LOCAIS (2026-08-31)
+================================================================================
+Algorithm       Hash                                                             Path
+---------       ----                                                             ----
+SHA256          F28BD53115ED951147118A7CDC96573CB238FEF047C7556A3F3F0C231E07F278 D:\git-lab-pes\overmem\files\pes2021\player-memory\pes2021-player-edit-v1.json
+SHA256          F84D08915482ED9A0DCB0E54D3794EB4FEEF1F3774F1F41E45391BEAE861F4BF D:\git-lab-pes\overmem\files\pes2021\player-memory\pes2021-player-record-v1.json
+SHA256          37B9437C96E406EF19AD8AAA8FF6232614F9D87C1A64B2EA85416029F722B07A D:\git-lab-pes\overmem\docs\pes2021\player-memory\wire-examples\player-high-bit-id.json
+SHA256          8AD3E018EA712E3A9C7CEE721A92AFAD1525FE433EA229BF20EFA953AEAD2190 D:\git-lab-pes\overmem\docs\pes2021\player-memory\wire-examples\scan.json
+
+================================================================================
+DOTNET BUILD Overmem.slnx
+================================================================================
+  Determinando os projetos a serem restaurados...
+  Todos os projetos estao atualizados para restauracao.
+  Overmem.Abstractions -> D:\git-lab-pes\overmem\src\Overmem.Abstractions\bin\Debug\net8.0\Overmem.Abstractions.dll
+  Overmem.TestTarget -> D:\git-lab-pes\overmem\tests\Overmem.TestTarget\bin\Debug\net8.0\Overmem.TestTarget.dll
+  Overmem.Windows -> D:\git-lab-pes\overmem\src\Overmem.Windows\bin\Debug\net8.0\Overmem.Windows.dll
+  Overmem.Runtime -> D:\git-lab-pes\overmem\src\Overmem.Runtime\bin\Debug\net8.0\Overmem.Runtime.dll
+  Overmem.Search -> D:\git-lab-pes\overmem\src\Overmem.Search\bin\Debug\net8.0\Overmem.Search.dll
+  Overmem.Application -> D:\git-lab-pes\overmem\src\Overmem.Application\bin\Debug\net8.0\Overmem.Application.dll
+  Overmem.Hosting -> D:\git-lab-pes\overmem\src\Overmem.Hosting\bin\Debug\net8.0\Overmem.Hosting.dll
+  Overmem.Extensions.Pes2021 -> D:\git-lab-pes\overmem\src\Overmem.Extensions.Pes2021\bin\Debug\net8.0\Overmem.Extensions.Pes2021.dll
+  Overmem.Cli -> D:\git-lab-pes\overmem\src\Overmem.Cli\bin\Debug\net8.0\Overmem.Cli.dll
+  Overmem.McpServer -> D:\git-lab-pes\overmem\src\Overmem.McpServer\bin\Debug\net8.0\Overmem.McpServer.dll
+  Overmem.Tests -> D:\git-lab-pes\overmem\tests\Overmem.Tests\bin\Debug\net8.0\Overmem.Tests.dll
+  Overmem.Extensions.Pes2021.Tests -> D:\git-lab-pes\overmem\tests\Overmem.Extensions.Pes2021.Tests\bin\Debug\net10.0\Overmem.Extensions.Pes2021.Tests.dll
+
+Compilacao com exito.
+    0 Aviso(s)
+    0 Erro(s)
+
+================================================================================
+DOTNET TEST Overmem.slnx --no-build
+================================================================================
+Execucao de teste para D:\git-lab-pes\overmem\tests\Overmem.Tests\bin\Debug\net8.0\Overmem.Tests.dll (.NETCoreApp,Version=v8.0)
+1 arquivos de teste no total corresponderam ao padrao especificado.
+
+Aprovado!  - Com falha:     0, Aprovado:    62, Ignorado:     0, Total:    62, Duracao: 5 s - Overmem.Tests.dll (net8.0)
+
+Execucao de teste para D:\git-lab-pes\overmem\tests\Overmem.Extensions.Pes2021.Tests\bin\Debug\net10.0\Overmem.Extensions.Pes2021.Tests.dll (.NETCoreApp,Version=v10.0)
+1 arquivos de teste no total corresponderam ao padrao especificado.
+
+Aprovado!  - Com falha:     0, Aprovado:   208, Ignorado:     0, Total:   208, Duracao: 608 ms - Overmem.Extensions.Pes2021.Tests.dll (net10.0)
+
+================================================================================
+DOTNET TEST tests\Overmem.Extensions.Pes2021.Tests\Overmem.Extensions.Pes2021.Tests.csproj --no-build
+================================================================================
+Execucao de teste para D:\git-lab-pes\overmem\tests\Overmem.Extensions.Pes2021.Tests\bin\Debug\net10.0\Overmem.Extensions.Pes2021.Tests.dll (.NETCoreApp,Version=v10.0)
+1 arquivos de teste no total corresponderam ao padrao especificado.
+
+Aprovado!  - Com falha:     0, Aprovado:   208, Ignorado:     0, Total:   208, Duracao: 568 ms - Overmem.Extensions.Pes2021.Tests.dll (net10.0)
+
+================================================================================
+GIT DIFF --CHECK
+================================================================================
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/pes2021/player-memory/wire-contracts.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/pes2021/player-memory/wire-examples/scan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerProfileDefaults.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerContractsTests.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerProfileTests.cs', LF will be replaced by CRLF the next time Git touches it
+PASS - 0 whitespace/formatting errors
+
+================================================================================
+GIT STATUS --SHORT
+================================================================================
+ M README.md
+ M docs/pes2021/player-memory/wire-contracts.md
+ M docs/pes2021/player-memory/wire-examples/scan.json
+ M files/pes2021/player-memory/pes2021-player-record-v1.json
+ M src/Overmem.Extensions.Pes2021/Players/Pes2021PlayerProfileDefaults.cs
+ M tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerContractsTests.cs
+ M tests/Overmem.Extensions.Pes2021.Tests/Pes2021PlayerProfileTests.cs
+?? docs/pes2021/player-memory/deliveries/R0-P0P1-LIVE-ALIGNMENT/
+?? docs/pes2021/player-memory/wire-examples/player-high-bit-id.json
+?? files/pes2021/player-memory/pes2021-player-edit-v1.json

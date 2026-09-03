@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "pes2021.player-memory.codex-evidence.v1",
+  "capturedAt": "2026-09-02",
+  "context": "EDIT_NO_ML",
+  "safety": {
+    "readOnly": true,
+    "liveWrites": 0,
+    "luaExecuted": false,
+    "cheatEngineUsed": false
+  },
+  "process": {
+    "processIdHistorical": 33136,
+    "addressesAreSessionLocal": true
+  },
+  "restartValidation": {
+    "status": "PASS",
+    "secondProcessIdHistorical": 25604,
+    "pidChanged": true,
+    "addressesChanged": true,
+    "anchorRediscovered": true,
+    "recordStride": 380,
+    "populatedSlots": 25005,
+    "emptyReservedSlots": 4996,
+    "theoreticalSlots": 30001,
+    "unaccountedSlots": 0,
+    "duplicatePlayerIds": 0,
+    "fiveControlRecordHashesStable": true,
+    "semanticUiCorrelationPending": true
+  },
+  "semanticCoverage": {
+    "recordBytesCaptured": 380,
+    "recordBytesExplicitlyModeled": 226,
+    "confirmedBytes": 67,
+    "candidateBytes": 153,
+    "unknownBytes": 6,
+    "unmodeledBytes": 154,
+    "confirmedPercent": 17.63,
+    "unmodeledPercent": 40.53
+  },
+  "contractFieldOccupancy": {
+    "totalPlayers": 25005,
+    "positiveMarketValue": 1700,
+    "positiveMarketValuePercent": 6.7986,
+    "plausibleContractEndDate": 1527,
+    "plausibleContractEndDatePercent": 6.1068,
+    "marketAndDate": 1500,
+    "positiveAnnualSalary": 0,
+    "transferListedBit": 0,
+    "loanListedBit": 0,
+    "actualLoanRelationshipResolved": false
+  },
+  "anchor": {
+    "controlPlayerId": 58120,
+    "fingerprint": "Piero Hincapie",
+    "addressHistorical": "0x7FF4DA02F210",
+    "ambiguous": false,
+    "confidence": "high",
+    "score": 16,
+    "maxScore": 16,
+    "candidateCount": 1
+  },
+  "arena": {
+    "regionBaseHistorical": "0x7FF4D9E60000",
+    "firstRecordHistorical": "0x7FF4D9E60010",
+    "arenaStopExclusiveHistorical": "0x7FF4DA93F4CC",
+    "recordStride": 380,
+    "populatedSlots": 25005,
+    "uniqueRawPlayerIds": 25005,
+    "emptyReservedSlots": 4996,
+    "theoreticalSlots": 30001,
+    "duplicatePlayerIds": 0,
+    "emptyRecordSha256": "c80ea0b4665a3928b96d4c7972b37de66128b57ca0979accfdc1485857c16a0e"
+  },
+  "artifacts": {
+    "anchor": {
+      "path": "files/pes2021/player-memory/codex-live-anchor-operational.json",
+      "sha256": "2EB6FF4BC30A8A7CA0E2DA55017FB3E6AD58EB8E4DAF9D8F25F5572760FBF4EF"
+    },
+    "fullScanLocal": {
+      "path": "files/pes2021/player-memory/codex-live-edit-operational.json",
+      "sha256": "A5CDC008919A1FCC97AA810540FE5F535430A83C6210A95498427D0BBE235E3B",
+      "commitRecommendation": "DO_NOT_COMMIT_WITHOUT_EXPLICIT_DECISION"
+    },
+    "restartAnchor": {
+      "path": "files/pes2021/player-memory/codex-live-anchor-restart-2026-09-02.json",
+      "sha256": "C50E6BC4F4CCF09AAB69BC51EAD38087851761A75FCF9310FE3698BB1C6ED316"
+    },
+    "restartFullScanLocal": {
+      "path": "files/pes2021/player-memory/codex-live-edit-restart-2026-09-02.json",
+      "sha256": "6D7E922C28D3120BCAB2B819783A716596E5C71D10B18826CF9CE85D6A5FBEA4",
+      "commitRecommendation": "DO_NOT_COMMIT_WITHOUT_EXPLICIT_DECISION"
+    }
+  },
+  "tests": {
+    "corePassed": 62,
+    "pes2021ExtensionPassed": 326,
+    "totalPassed": 388,
+    "failed": 0,
+    "warnings": 0
+  },
+  "refutations": {
+    "recordStride0x46C94": "REFUTED",
+    "only61PlayersOutsideMl": "REFUTED",
+    "twoIndependentArenas": "REFUTED"
+  },
+  "gate": "OPERATIONAL_READ_RESTART_VALIDATED_UI_CORRELATION_PENDING"
+}

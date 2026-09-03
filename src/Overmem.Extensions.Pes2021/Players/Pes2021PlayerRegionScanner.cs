@@ -1,7 +1,9 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Overmem.Abstractions;
@@ -13,10 +15,9 @@ using Overmem.Runtime;
 namespace Overmem.Extensions.Pes2021.Players;
 
 /// <summary>
-/// Region/block scanner for the EDIT-base player arena. Walks every region that passes
-/// the profile filter, scans with <c>stride - 1</c> byte overlap so a hit cannot straddle
-/// two chunks, decodes each candidate with <see cref="Pes2021PlayerRecordParser"/>, and
-/// aggregates the survivors plus diagnostics. The scanner never writes.
+/// Region/block scanner for the EDIT-base player arena. Locates the memory region that
+/// contains the validated control-player anchor, derives the record-grid residue from
+/// that anchor, and walks the region at the profile stride. The scanner never writes.
 /// </summary>
 public sealed class Pes2021PlayerRegionScanner
 {
@@ -45,79 +46,137 @@ public sealed class Pes2021PlayerRegionScanner
         collector.AddRegions(regionDiagnostics);
 
         var stride = profile.Stride;
-        var players = new List<DecodedPlayerRecord>();
-        var duplicateIds = new Dictionary<uint, int>();
-        var seenAddresses = new HashSet<ulong>();
+        if (!TryParseHex(session.AnchorAddress, out var anchorAddress))
+        {
+            collector.AddWarning("anchor_missing_or_invalid");
+            collector.CacheDisposition = CacheDisposition.Refused;
+            return new PlayerDiscoveryResult(session, Array.Empty<DecodedPlayerRecord>(), collector.Build());
+        }
 
-        foreach (var region in acceptedRegions)
+        var anchorRegion = acceptedRegions.FirstOrDefault(region =>
+            anchorAddress >= region.BaseAddress
+            && anchorAddress < checked(region.BaseAddress + region.RegionSize));
+        if (anchorRegion is null)
+        {
+            collector.AddWarning("anchor_region_not_found");
+            collector.CacheDisposition = CacheDisposition.Refused;
+            return new PlayerDiscoveryResult(session, Array.Empty<DecodedPlayerRecord>(), collector.Build());
+        }
+
+        var regionStart = anchorRegion.BaseAddress;
+        var regionStop = checked(regionStart + anchorRegion.RegionSize);
+        var residue = (anchorAddress - regionStart) % (ulong)stride;
+        var firstRecordAddress = checked(regionStart + residue);
+        var totalGridSlots = (int)((regionStop - firstRecordAddress) / (ulong)stride);
+        var anchorGridSlot = checked((int)((anchorAddress - firstRecordAddress) / (ulong)stride));
+
+        var validBySlot = new Dictionary<int, DecodedPlayerRecord>();
+        var invalidHashBySlot = new Dictionary<int, string>();
+        var blockRecords = Math.Max(1, profile.RegionFilter.ChunkBytes / stride);
+
+        for (var firstSlot = 0; firstSlot < totalGridSlots; firstSlot += blockRecords)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            var regionStart = region.BaseAddress;
-            var regionStop = checked(region.BaseAddress + region.RegionSize);
-            if (region.RegionSize < (ulong)stride) continue;
-
-            var chunkBytes = (int)Math.Min(profile.RegionFilter.ChunkBytes, (long)region.RegionSize);
-            if (chunkBytes <= 0) continue;
-
-            var overlap = stride - 1;
-            var cursor = regionStart;
-            byte[] previousTail = Array.Empty<byte>();
-
-            while (cursor < regionStop)
+            var count = Math.Min(blockRecords, totalGridSlots - firstSlot);
+            var bytesToRequest = checked(count * stride);
+            var address = checked(firstRecordAddress + (ulong)(firstSlot * stride));
+            var buffer = await ReadBytesAsync(attachmentId, address, bytesToRequest, cancellationToken);
+            collector.AddReadCall(bytesToRequest, buffer?.Length ?? 0);
+            if (buffer is null || buffer.Length < bytesToRequest)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                collector.AddRejection(PlayerRecordRejectionReasons.PartialRead, count);
+                continue;
+            }
 
-                var remaining = (long)regionStop - (long)cursor;
-                var primaryLength = (int)Math.Min(chunkBytes, remaining);
-                var bytesToRequest = (int)Math.Min((long)(chunkBytes + overlap), remaining);
-                if (bytesToRequest <= 0) break;
-
-                collector.AddReadCall(bytesToRequest, bytesToRequest);
-                var buffer = await ReadBytesAsync(attachmentId, cursor, bytesToRequest, cancellationToken);
-                if (buffer is null)
+            for (var local = 0; local < count; local++)
+            {
+                var slot = firstSlot + local;
+                var offset = local * stride;
+                var recordAddress = checked(firstRecordAddress + (ulong)(slot * stride));
+                var slice = buffer.AsSpan(offset, stride);
+                var parse = Pes2021PlayerRecordParser.TryParse(slice, slot, recordAddress, profile);
+                if (parse.Success && parse.Record is not null
+                    && Pes2021PlayerRecordValidator.Validate(parse.Record, profile).Accept)
                 {
-                    collector.AddRejection(PlayerRecordRejectionReasons.PartialRead);
-                    break;
+                    validBySlot[slot] = parse.Record;
                 }
-
-                var combined = Combine(previousTail, buffer);
-                var recordCount = combined.Length / stride;
-                for (var i = 0; i < recordCount; i++)
+                else
                 {
-                    var offset = i * stride;
-                    var recordAddress = checked(cursor + (ulong)offset - (ulong)previousTail.Length);
-                    if (!seenAddresses.Add(recordAddress)) { continue; }
-
-                    var slice = new byte[stride];
-                    Array.Copy(combined, offset, slice, 0, stride);
-
-                    var parse = Pes2021PlayerRecordParser.TryParse(slice, players.Count, recordAddress, profile);
-                    collector.AddRecords(1, parse.Success ? 1 : 0, parse.Success ? 0 : 1);
-                    if (parse.Success && parse.Record is not null)
-                    {
-                        players.Add(parse.Record);
-                        if (!duplicateIds.ContainsKey(parse.Record.PlayerId)) duplicateIds[parse.Record.PlayerId] = 0;
-                        duplicateIds[parse.Record.PlayerId]++;
-                    }
-                    else if (parse.RejectionReason is not null)
-                    {
-                        collector.AddRejection(parse.RejectionReason);
-                    }
+                    invalidHashBySlot[slot] = Convert.ToHexString(SHA256.HashData(slice)).ToLowerInvariant();
                 }
-
-                var overlapStart = Math.Max(0, combined.Length - overlap);
-                previousTail = new byte[overlap];
-                Array.Copy(combined, overlapStart, previousTail, 0, overlap);
-                cursor = checked(cursor + (ulong)primaryLength);
-                if (primaryLength == 0) break;
             }
         }
 
-        collector.AddDuplicatePlayerIds(duplicateIds.Count(kvp => kvp.Value > 1));
+        if (!validBySlot.ContainsKey(anchorGridSlot))
+        {
+            collector.AddWarning("anchor_record_not_valid_on_discovered_grid");
+            collector.CacheDisposition = CacheDisposition.Refused;
+            return new PlayerDiscoveryResult(session, Array.Empty<DecodedPlayerRecord>(), collector.Build());
+        }
+
+        var firstPopulatedSlot = anchorGridSlot;
+        while (firstPopulatedSlot > 0 && validBySlot.ContainsKey(firstPopulatedSlot - 1)) firstPopulatedSlot--;
+        var lastPopulatedSlot = anchorGridSlot;
+        while (lastPopulatedSlot + 1 < totalGridSlots && validBySlot.ContainsKey(lastPopulatedSlot + 1)) lastPopulatedSlot++;
+
+        var players = new List<DecodedPlayerRecord>(lastPopulatedSlot - firstPopulatedSlot + 1);
+        for (var slot = firstPopulatedSlot; slot <= lastPopulatedSlot; slot++)
+        {
+            players.Add(validBySlot[slot] with { RecordIndex = slot - firstPopulatedSlot });
+        }
+
+        var firstEmptySlot = lastPopulatedSlot + 1;
+        string? emptyRecordSha256 = null;
+        var emptyReservedSlots = 0;
+        if (firstEmptySlot < totalGridSlots && invalidHashBySlot.TryGetValue(firstEmptySlot, out var firstEmptyHash))
+        {
+            emptyRecordSha256 = firstEmptyHash;
+            for (var slot = firstEmptySlot; slot < totalGridSlots; slot++)
+            {
+                if (!invalidHashBySlot.TryGetValue(slot, out var hash)
+                    || !string.Equals(hash, firstEmptyHash, StringComparison.Ordinal))
+                {
+                    break;
+                }
+
+                emptyReservedSlots++;
+            }
+        }
+
+        var theoreticalSlots = players.Count + emptyReservedSlots;
+        var arenaBaseAddress = checked(firstRecordAddress + (ulong)(firstPopulatedSlot * stride));
+        var arenaStopAddress = checked(arenaBaseAddress + (ulong)(theoreticalSlots * stride));
+        var duplicateIds = players.GroupBy(player => player.PlayerId).Count(group => group.Count() > 1);
+
+        collector.AddRecords(theoreticalSlots, players.Count, emptyReservedSlots);
+        collector.AddRejection("EMPTY_RESERVED_SLOT", emptyReservedSlots);
+        collector.AddDuplicatePlayerIds(duplicateIds);
+
+        var updatedSession = session with
+        {
+            ArenaBaseAddress = FormatHex(arenaBaseAddress),
+            ArenaStopAddress = FormatHex(arenaStopAddress),
+            ValidatedAtUtc = _clock.UtcNow,
+        };
 
         var diagnostics = collector.Build();
-        return new PlayerDiscoveryResult(session, players, diagnostics);
+        return new PlayerDiscoveryResult(updatedSession, players, diagnostics)
+        {
+            ArenaCoverage = new PlayerArenaCoverage(
+                RegionBaseAddress: FormatHex(regionStart),
+                RegionStopAddress: FormatHex(regionStop),
+                FirstRecordAddress: FormatHex(firstRecordAddress),
+                ArenaBaseAddress: FormatHex(arenaBaseAddress),
+                ArenaStopAddress: FormatHex(arenaStopAddress),
+                RecordStride: stride,
+                AnchorSlotIndex: anchorGridSlot - firstPopulatedSlot,
+                PopulatedSlots: players.Count,
+                EmptyReservedSlots: emptyReservedSlots,
+                TheoreticalSlots: theoreticalSlots,
+                UnaccountedSlots: 0,
+                EmptyRecordSha256: emptyRecordSha256,
+                BoundaryClassification: arenaStopAddress < regionStop ? "NON_PLAYER_DATA" : "REGION_END")
+        };
     }
 
     private async Task<byte[]?> ReadBytesAsync(AttachmentId attachmentId, ulong address, int size, CancellationToken cancellationToken)
@@ -192,11 +251,16 @@ public sealed class Pes2021PlayerRegionScanner
         return list;
     }
 
-    private static byte[] Combine(byte[] head, byte[] tail)
+    private static bool TryParseHex(string text, out ulong value)
     {
-        var combined = new byte[head.Length + tail.Length];
-        Buffer.BlockCopy(head, 0, combined, 0, head.Length);
-        Buffer.BlockCopy(tail, 0, combined, head.Length, tail.Length);
-        return combined;
+        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            return ulong.TryParse(text.AsSpan(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value);
+        }
+
+        return ulong.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
     }
+
+    private static string FormatHex(ulong value)
+        => string.Create(CultureInfo.InvariantCulture, $"0x{value:X}");
 }

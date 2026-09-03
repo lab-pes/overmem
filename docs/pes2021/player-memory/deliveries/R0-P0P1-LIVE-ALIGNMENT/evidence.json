@@ -1,0 +1,81 @@
+{
+  "deliveryId": "R0-P0P1-LIVE-ALIGNMENT",
+  "timestampUtc": "2026-08-31T22:30:00.000Z",
+  "repository": "D:\\git-lab-pes\\overmem",
+  "status": "PRODUCED_WAITING_FOR_CODEX_AUDIT",
+  "scope": {
+    "package": "R0-P0P1-LIVE-ALIGNMENT",
+    "p0ContractsAligned": true,
+    "p1ValidationFixed": true,
+    "p2Started": false,
+    "p3Started": false,
+    "mlStarted": false,
+    "processMemoryAccess": false,
+    "processMemoryWrite": false
+  },
+  "liveBaseline": {
+    "theoreticalSlots": 30001,
+    "populatedSlots": 25005,
+    "emptyReservedSlots": 4996,
+    "unaccountedSlots": 0,
+    "uniqueRawPlayerIds": 25005,
+    "duplicateRawPlayerIds": 0,
+    "emptySlotSha256": "C80EA0B4665A3928B96D4C7972B37DE66128B57CA0979ACCFDC1485857C16A0E"
+  },
+  "historicalComparison": {
+    "historicalExportRows": 23253,
+    "historicalUniqueIds": 23250,
+    "historicalIdsPresentLive": 23250,
+    "historicalIdsAbsentLive": 0,
+    "liveRawIdsAbsentHistorically": 1755
+  },
+  "validationRules": {
+    "playerIdType": "u32le",
+    "minimumPlayerId": 1,
+    "maximumPlayerId": 4294967295,
+    "minimumHeight": 120,
+    "maximumHeight": 220,
+    "minimumWeight": 30,
+    "maximumWeight": 160,
+    "stride": 380
+  },
+  "highBitFixture": {
+    "rawPlayerId": 2147483710,
+    "rawPlayerIdHex": "0x8000003E",
+    "playerName": "Franz Gonzales",
+    "idFlags": "UNKNOWN",
+    "fixturePath": "docs/pes2021/player-memory/wire-examples/player-high-bit-id.json",
+    "sha256": "37B9437C96E406EF19AD8AAA8FF6232614F9D87C1A64B2EA85416029F722B07A"
+  },
+  "files": {
+    "pes2021PlayerEditV1Json": {
+      "path": "files/pes2021/player-memory/pes2021-player-edit-v1.json",
+      "sha256": "F28BD53115ED951147118A7CDC96573CB238FEF047C7556A3F3F0C231E07F278",
+      "role": "Canonical EDIT profile"
+    },
+    "pes2021PlayerRecordV1Json": {
+      "path": "files/pes2021/player-memory/pes2021-player-record-v1.json",
+      "sha256": "F84D08915482ED9A0DCB0E54D3794EB4FEEF1F3774F1F41E45391BEAE861F4BF",
+      "role": "Legacy profile alias"
+    },
+    "scanJson": {
+      "path": "docs/pes2021/player-memory/wire-examples/scan.json",
+      "sha256": "8AD3E018EA712E3A9C7CEE721A92AFAD1525FE433EA229BF20EFA953AEAD2190",
+      "role": "Aligned scan wire example"
+    },
+    "playerHighBitIdJson": {
+      "path": "docs/pes2021/player-memory/wire-examples/player-high-bit-id.json",
+      "sha256": "37B9437C96E406EF19AD8AAA8FF6232614F9D87C1A64B2EA85416029F722B07A",
+      "role": "High-bit ID Franz Gonzales fixture"
+    }
+  },
+  "testExecution": {
+    "totalPassing": 270,
+    "pes2021TestsPassing": 208,
+    "coreTestsPassing": 62,
+    "failing": 0,
+    "skipped": 0,
+    "buildWarnings": 0,
+    "buildErrors": 0
+  }
+}

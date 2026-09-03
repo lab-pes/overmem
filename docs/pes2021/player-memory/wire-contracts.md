@@ -80,17 +80,37 @@ Used by `pes2021-scan-players` / `pes2021_scan_players`.
   "arena": {
     "context": "EDIT_BASE_CANDIDATE",
     "segments": [
-      {"startAddress": "0x7FF4D9000000", "stopAddress": "0x7FF4DA140000", "stride": 380, "theoreticalSlots": 23253}
+      {
+        "startAddress": "0x7FF4D9000000",
+        "stopAddress": "0x7FF4DA140000",
+        "stride": 380,
+        "theoreticalSlots": 30001,
+        "populatedSlots": 25005,
+        "emptyReservedSlots": 4996,
+        "unaccountedSlots": 0
+      }
     ]
   },
   "summary": {
-    "recordsDecoded": 23253,
-    "recordsAccepted": 23120,
-    "recordsRejected": 133,
-    "duplicatePlayerIds": 3,
+    "theoreticalSlots": 30001,
+    "populatedSlots": 25005,
+    "emptyReservedSlots": 4996,
+    "unaccountedSlots": 0,
+    "uniqueRawPlayerIds": 25005,
+    "duplicatePlayerIds": 0,
+    "recordsDecoded": 25005,
+    "recordsAccepted": 25005,
+    "recordsRejected": 0,
     "ambiguousResolutions": 0,
     "holes": 0,
-    "partialReads": 0
+    "partialReads": 0,
+    "historicalComparison": {
+      "historicalExportRows": 23253,
+      "historicalUniqueIds": 23250,
+      "historicalIdsPresentLive": 23250,
+      "historicalIdsAbsentLive": 0,
+      "liveRawIdsAbsentHistorically": 1755
+    }
   },
   "players": [
     {
@@ -130,9 +150,9 @@ Used by `pes2021-scan-players` / `pes2021_scan_players`.
     "bytesRead": 33554432,
     "readCalls": 33,
     "elapsedMs": 412.7,
-    "rejectionReasons": {"height_out_of_range": 11, "weight_out_of_range": 8, "name_unterminated": 22}
+    "rejectionReasons": {"height_out_of_range": 0, "weight_out_of_range": 0, "name_unterminated": 0}
   },
-  "warnings": ["three_duplicate_player_ids_detected"]
+  "warnings": []
 }
 ```
 

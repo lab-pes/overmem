@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "pes2021.player-memory.v1",
+  "kind": "player_snapshot",
+  "session": {
+    "attachmentId": "00000000-0000-0000-0000-000000000000",
+    "processId": 1,
+    "processStartedAtUtc": "2026-08-30T19:12:33.000Z",
+    "profileId": "pes2021-player-edit-v1",
+    "profileVersion": "1.0.0",
+    "profileSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "player": {
+    "recordAddress": "0x0",
+    "playerId": 2147483710,
+    "rawPlayerId": 2147483710,
+    "rawPlayerIdHex": "0x8000003E",
+    "idFlags": "UNKNOWN",
+    "fingerprint": "Franz Gonzales",
+    "context": "EDIT_BASE_CONFIRMED",
+    "rawRecordSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "fields": [
+      {"name": "height", "raw": 172, "display": null, "evidenceStatus": "CONFIRMED"},
+      {"name": "weight", "raw": 68, "display": null, "evidenceStatus": "CONFIRMED"},
+      {"name": "playerId", "raw": 2147483710, "display": null, "evidenceStatus": "CONFIRMED"},
+      {"name": "playerName", "raw": "Franz Gonzales", "display": null, "evidenceStatus": "CONFIRMED"},
+      {"name": "marketValue", "raw": 0, "display": 0, "evidenceStatus": "CANDIDATE"}
+    ]
+  },
+  "warnings": []
+}

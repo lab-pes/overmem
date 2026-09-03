@@ -189,8 +189,7 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 CliOptionParser.ParseSelector(options),
                 CliOptionParser.ParseUInt32(CliOptionParser.GetRequiredOption(options, "control-player-id")),
                 CliOptionParser.GetOptionalOption(options, "profile-file"),
-                CliOptionParser.GetOptionalOption(options, "output-file"),
-                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "max-records") ?? "50000")),
+                CliOptionParser.GetOptionalOption(options, "output-file")),
             "pes2021-query-player" => new Pes2021QueryPlayerCliCommand(
                 CliOptionParser.ParseSelector(options),
                 CliOptionParser.ParseUInt32(CliOptionParser.GetRequiredOption(options, "player-id")),
@@ -200,17 +199,6 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 CliOptionParser.ParseUInt32(CliOptionParser.GetRequiredOption(options, "control-player-id")),
                 CliOptionParser.GetOptionalOption(options, "profile-file"),
                 CliOptionParser.GetRequiredOption(options, "output")),
-            "pes2021-stride-scan-players" => new Pes2021StrideScanPlayersCliCommand(
-                CliOptionParser.ParseSelector(options),
-                CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "start-address")),
-                CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "stop-address")),
-                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "stride") ?? "380"),
-                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "max-records") ?? "200")),
-            "pes2021-scan-all-arenas" => new Pes2021ScanAllArenasCliCommand(
-                CliOptionParser.ParseSelector(options),
-                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "stride") ?? "763"),
-                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "max-records-per-arena") ?? "5000"),
-                CliOptionParser.ParseUnsignedLong(CliOptionParser.GetOptionalOption(options, "min-region-size") ?? "1048576")),
             _ => null
         };
     }
@@ -412,11 +400,16 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                     scanPlayers.ControlPlayerId,
                     regions: null,
                     cancellationToken), stdout, scanPlayers.OutputFile, cancellationToken),
-            Pes2021QueryPlayerCliCommand queryPlayer => ExecutePlayerAttachmentAsync(queryPlayer.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), services.GetRequiredService<Pes2021PlayerCatalogService>(), attachment =>
+            Pes2021QueryPlayerCliCommand queryPlayer => ExecutePlayerAttachmentAsync(queryPlayer.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), services.GetRequiredService<Pes2021PlayerCatalogService>(), async attachment =>
             {
-                var catalog = services.GetRequiredService<Pes2021PlayerCatalogService>().Catalog;
-                catalog.Clear();
-                return Task.FromResult<object>(services.GetRequiredService<Pes2021PlayerQueryService>().QueryByPlayerId(queryPlayer.PlayerId));
+                await services.GetRequiredService<Pes2021PlayerCatalogService>().RefreshAsync(
+                    attachment.AttachmentId,
+                    BuildProcessIdentity(attachment),
+                    LoadPlayerProfile(queryPlayer.ProfileFile),
+                    queryPlayer.PlayerId,
+                    regions: null,
+                    cancellationToken);
+                return services.GetRequiredService<Pes2021PlayerQueryService>().QueryByPlayerId(queryPlayer.PlayerId);
             }, stdout, outputFile: null, cancellationToken),
             Pes2021ExportPlayerCatalogCliCommand exportCatalog => ExecutePlayerAttachmentAsync(exportCatalog.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), services.GetRequiredService<Pes2021PlayerCatalogService>(), async attachment =>
             {
@@ -431,25 +424,6 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 Pes2021AtomicFileWriter.WriteJson(exportCatalog.OutputFile, export, JsonOptions);
                 return export;
             }, stdout, exportCatalog.OutputFile, cancellationToken),
-            Pes2021StrideScanPlayersCliCommand strideScan => ExecuteStrideScanAsync(
-                strideScan.Selector,
-                services.GetRequiredService<ProcessMemoryApplicationService>(),
-                LoadPlayerProfile(null),
-                strideScan.StartAddress,
-                strideScan.StopAddress,
-                strideScan.Stride,
-                strideScan.MaxRecords,
-                stdout,
-                cancellationToken),
-            Pes2021ScanAllArenasCliCommand scanAll => ExecuteScanAllArenasAsync(
-                scanAll.Selector,
-                services.GetRequiredService<ProcessMemoryApplicationService>(),
-                LoadPlayerProfile(null),
-                scanAll.Stride,
-                scanAll.MaxRecordsPerArena,
-                scanAll.MinRegionSize,
-                stdout,
-                cancellationToken),
             _ => null
         };
     }
@@ -512,7 +486,7 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
             "  pes2021-extract-competition-fixtures --pid <id>|--name <process> --competition-id <id> [--team-id <id>] [--team-liga <id>] [--calendar-base-address <value>] [--competition-block-base-address <value>] [--anchor-address <value>] [--profile-file <path>] [--competition-map-file <path>] [--team-map-file <path>] [--block-records <count>] [--record-limit <count>] [--output-file <path>]",
             "  pes2021-scan-club-relations --pid <id>|--name <process> --team-catalog <path> --competition-map <path> --output <dir> [--mode baseline|layout] [--block-bytes <bytes>] [--restart-timeout-seconds <seconds>] [--input <observations.csv>] [--window-sizes <s1,s2,...>]",
             "  pes2021-find-player-anchor --pid <id>|--name <process> --control-player-id <id> [--profile-file <path>] [--output-file <path>]",
-            "  pes2021-scan-players --pid <id>|--name <process> --control-player-id <id> [--profile-file <path>] [--output-file <path>] [--max-records <count>]",
+            "  pes2021-scan-players --pid <id>|--name <process> --control-player-id <id> [--profile-file <path>] [--output-file <path>]",
             "  pes2021-query-player --pid <id>|--name <process> --player-id <id> [--profile-file <path>]",
             "  pes2021-export-player-catalog --pid <id>|--name <process> --control-player-id <id> --output <path> [--profile-file <path>]"
         ];

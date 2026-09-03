@@ -143,4 +143,26 @@ public sealed record PlayerAnchorResult(
 public sealed record PlayerDiscoveryResult(
     PlayerSession Session,
     IReadOnlyList<DecodedPlayerRecord> Players,
-    PlayerDiscoveryDiagnostics Diagnostics);
+    PlayerDiscoveryDiagnostics Diagnostics)
+{
+    public PlayerArenaCoverage? ArenaCoverage { get; init; }
+}
+
+/// <summary>
+/// Territorial accounting for the single EDIT arena selected by the validated anchor.
+/// Empty reserved slots are part of the arena capacity but are not player snapshots.
+/// </summary>
+public sealed record PlayerArenaCoverage(
+    string RegionBaseAddress,
+    string RegionStopAddress,
+    string FirstRecordAddress,
+    string ArenaBaseAddress,
+    string ArenaStopAddress,
+    int RecordStride,
+    int AnchorSlotIndex,
+    int PopulatedSlots,
+    int EmptyReservedSlots,
+    int TheoreticalSlots,
+    int UnaccountedSlots,
+    string? EmptyRecordSha256,
+    string BoundaryClassification);

@@ -1,5 +1,7 @@
 # PES 2021 player-memory dump - both EDIT arenas - 2026-09-02
 
+> **REFUTADO COMO MAPA COMPLETO:** os 61 itens sao subamostras sobrepostas da mesma arena `0x17C`; um deles esta deslocado `+3` bytes. Veja `docs/pes2021/player-memory/deliveries/P10/codex-review-2026-09-02.md`.
+
 ## Capture context
 
 - Date: 2026-09-02 (UTC)

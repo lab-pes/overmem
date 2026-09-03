@@ -57,6 +57,21 @@ public sealed class Pes2021PlayerContractsTests
         var json = LoadWireExample("scan");
         using var document = JsonDocument.Parse(json);
 
+        var summary = document.RootElement.GetProperty("summary");
+        Assert.Equal(30001, summary.GetProperty("theoreticalSlots").GetInt32());
+        Assert.Equal(25005, summary.GetProperty("populatedSlots").GetInt32());
+        Assert.Equal(4996, summary.GetProperty("emptyReservedSlots").GetInt32());
+        Assert.Equal(0, summary.GetProperty("unaccountedSlots").GetInt32());
+        Assert.Equal(25005, summary.GetProperty("uniqueRawPlayerIds").GetInt32());
+        Assert.Equal(0, summary.GetProperty("duplicatePlayerIds").GetInt32());
+
+        var historical = summary.GetProperty("historicalComparison");
+        Assert.Equal(23253, historical.GetProperty("historicalExportRows").GetInt32());
+        Assert.Equal(23250, historical.GetProperty("historicalUniqueIds").GetInt32());
+        Assert.Equal(23250, historical.GetProperty("historicalIdsPresentLive").GetInt32());
+        Assert.Equal(0, historical.GetProperty("historicalIdsAbsentLive").GetInt32());
+        Assert.Equal(1755, historical.GetProperty("liveRawIdsAbsentHistorically").GetInt32());
+
         var firstPlayer = document.RootElement.GetProperty("players").EnumerateArray().First();
         var fields = firstPlayer.GetProperty("fields").EnumerateArray().ToList();
 
@@ -65,6 +80,36 @@ public sealed class Pes2021PlayerContractsTests
             && field.GetProperty("evidenceStatus").GetString() == "UNKNOWN"
             && field.TryGetProperty("display", out var display)
             && display.ValueKind == JsonValueKind.Null);
+    }
+
+    [Fact]
+    public void HighBitIdFixture_RoundTripsWithoutTruncation_AndKeepsIdFlagsUnknown()
+    {
+        var json = LoadWireExample("player-high-bit-id");
+        using var document = JsonDocument.Parse(json);
+
+        Assert.Equal("pes2021.player-memory.v1", document.RootElement.GetProperty("schemaVersion").GetString());
+        Assert.Equal("player_snapshot", document.RootElement.GetProperty("kind").GetString());
+
+        var player = document.RootElement.GetProperty("player");
+        Assert.True(player.GetProperty("playerId").TryGetUInt32(out var playerId));
+        Assert.Equal(0x8000003Eu, playerId);
+        Assert.Equal(2147483710u, playerId);
+
+        Assert.Equal("Franz Gonzales", player.GetProperty("fingerprint").GetString());
+        Assert.Equal("UNKNOWN", player.GetProperty("idFlags").GetString());
+        Assert.Equal("EDIT_BASE_CONFIRMED", player.GetProperty("context").GetString());
+
+        var fields = player.GetProperty("fields").EnumerateArray().ToList();
+        var nameField = fields.Single(f => f.GetProperty("name").GetString() == "playerName");
+        Assert.Equal("Franz Gonzales", nameField.GetProperty("raw").GetString());
+
+        // Round-trip test: ensure serialization and deserialization maintain full u32 without signed overflow
+        var roundTrip = JsonSerializer.Deserialize<JsonElement>(json);
+        var roundTripPlayer = roundTrip.GetProperty("player");
+        Assert.True(roundTripPlayer.GetProperty("playerId").TryGetUInt32(out var rtPlayerId));
+        Assert.Equal(0x8000003Eu, rtPlayerId);
+        Assert.Equal("UNKNOWN", roundTripPlayer.GetProperty("idFlags").GetString());
     }
 
     [Fact]
@@ -140,7 +185,7 @@ public sealed class Pes2021PlayerContractsTests
     {
         var examples = new[]
         {
-            "anchor", "scan", "snapshot", "query", "patch-plan", "apply-result", "rollback-result",
+            "anchor", "scan", "snapshot", "query", "patch-plan", "apply-result", "rollback-result", "player-high-bit-id",
         };
 
         foreach (var name in examples)
@@ -160,6 +205,7 @@ public sealed class Pes2021PlayerContractsTests
     [InlineData("patch-plan", "patch_plan")]
     [InlineData("apply-result", "apply_result")]
     [InlineData("rollback-result", "rollback_result")]
+    [InlineData("player-high-bit-id", "player_snapshot")]
     public void WireContracts_KindFieldMatchesExampleName(string fileName, string expectedKind)
     {
         var json = LoadWireExample(fileName);
