@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "pes2021.player-memory.edit-ml-comparator-integration.v1",
+  "date": "2026-09-03",
+  "context": "EDIT_VS_EDIT_RESTART_CONTROL",
+  "safety": {
+    "offlineOnly": true,
+    "processAttachment": false,
+    "memoryWrites": 0
+  },
+  "inputs": {
+    "firstDumpSha256": "a5cdc008919a1fcc97aa810540fe5f535430a83c6210a95498427d0bbe235e3b",
+    "restartDumpSha256": "6d7e922c28d3120bcab2b819783a716596e5c71d10b18826cf9ce85d6a5fbea4"
+  },
+  "counts": {
+    "firstPlayers": 25005,
+    "restartPlayers": 25005,
+    "safeMatches": 25005,
+    "exactMatches": 25005,
+    "changedMatches": 0,
+    "fingerprintMismatches": 0,
+    "onlyFirst": 0,
+    "onlyRestart": 0,
+    "offsetsChangedInAnyPlayer": 0,
+    "modeledFieldsChanged": 0
+  },
+  "interpretation": "Integration control passed. Both inputs are EDIT captures; no ML semantic claim is made."
+}

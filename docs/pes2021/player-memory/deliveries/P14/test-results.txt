@@ -1,0 +1,33 @@
+P14 offline EDIT x ML comparator
+Date: 2026-09-03
+
+Python unittest:
+PASS tests = 2
+FAIL tests = 0
+
+Synthetic cases:
+PASS exact record
+PASS changed record
+PASS only EDIT
+PASS only ML
+PASS high-bit opaque u32 ID
+PASS fingerprint mismatch is not byte-compared
+PASS duplicate IDs rejected
+
+Real-scale EDIT restart integration:
+PASS input records = 25005 + 25005
+PASS safe matches = 25005
+PASS exact matches = 25005
+PASS changed matches = 0
+PASS fingerprint mismatches = 0
+PASS changed offsets = 0
+
+.NET regression:
+PASS Overmem.Tests = 62
+PASS Overmem.Extensions.Pes2021.Tests = 338
+PASS total = 400
+FAIL total = 0
+
+Safety:
+PASS process attachment = false
+PASS memory writes = 0
