@@ -1,0 +1,18 @@
+P16 validation — 2026-09-03
+
+PASS  analyze_reference_contracts.py completed
+PASS  second analyzer run changed zero generated files (deterministic output)
+PASS  Python bytecode compilation
+PASS  all 9 source/snapshot SHA-256 comparisons
+PASS  WORLD manifest: 4/4 declared data rows match current snapshot
+PASS  live read-only AOB scan: primary CT pattern 1 match in PES2021.exe
+PASS  live read-only AOB scan: WORLD Lua prefix 1 match in PES2021.exe
+PASS  live read-only AOB scan: secondary CT pattern 1 match in PES2021.exe
+PASS  Overmem.Tests: 62/62
+PASS  Overmem.Extensions.Pes2021.Tests: 340/340
+PASS  git diff --check
+
+Note: the first attempt ran both .NET projects concurrently and one build lost
+the write lock for an obj DLL to the other build. It was an infrastructure
+collision, not a failed test. The affected suite was rerun alone and passed
+62/62. Final test total: 402/402, zero failed, zero skipped.

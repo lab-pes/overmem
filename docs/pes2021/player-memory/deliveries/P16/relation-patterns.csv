@@ -1,0 +1,8 @@
+count,link_12c_valid,link_160_valid,link_164_valid,link_12c_equals_164,link_160_equals_164,candidate_loan_date
+17359,True,False,True,True,False,False
+6097,False,False,False,True,True,False
+433,True,False,False,False,True,False
+252,True,True,True,False,True,False
+176,True,True,True,False,True,True
+5,False,True,True,False,True,False
+3,True,True,True,True,False,True

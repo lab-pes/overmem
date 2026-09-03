@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "pes2021.player-memory.reference-contract-audit.v1",
+  "safety": {
+    "readOnly": true,
+    "memoryWrites": 0,
+    "referenceOriginalsModified": false
+  },
+  "inputs": {
+    "editDump": {
+      "path": "files/pes2021/player-memory/codex-live-edit-operational.json",
+      "sha256": "a5cdc008919a1fcc97aa810540fe5f535430a83c6210a95498427d0bbe235e3b"
+    },
+    "mlDump": {
+      "path": "files/pes2021/player-memory/codex-live-ml-candidate-b-2026-09-03.json",
+      "sha256": "44db28e74c717ad5319fb2ca3c6c2c8df7edf14ce20311da559712729b424999"
+    },
+    "referenceSnapshotFiles": 9,
+    "worldManifestRowsMatchingSnapshot": 4,
+    "worldManifestRows": 4
+  },
+  "staticInventory": {
+    "ctPtrPlayerFields": 128,
+    "ctDeclaredEndOffset": 380,
+    "ctMaximumDataOffset": 377,
+    "luaOffsetConstants": 20,
+    "ctContainsLink12c": true,
+    "ctContainsLink160": false,
+    "ctContainsLink164": false,
+    "ctContainsCandidateLoanDate16c": false,
+    "luaContainsLink160": true,
+    "luaContainsCandidateLoanDate16c": true
+  },
+  "population": {
+    "editRecords": 25005,
+    "mlRecords": 24325,
+    "safeUniqueEditMlAssociations": 24319
+  },
+  "mlOccupancy": {
+    "positiveSalary15c": 24325,
+    "plausibleContractDate138": 19517,
+    "positiveMarketValue174": 1699,
+    "candidateLoanDate16c": 179,
+    "auxLink160Valid": 436
+  },
+  "editMlChangedSafeAssociations": {
+    "contract_date_138_13b": 19554,
+    "salary_15c": 24319,
+    "link_12c": 18222,
+    "link_160": 565,
+    "link_164": 17794,
+    "candidate_loan_date_16c_16f": 424,
+    "market_value_174": 0
+  },
+  "luaDirectionAuditAgainstRoster164Candidate": {
+    "luaInferredRelations": 436,
+    "luaCurrent12cEqualsRoster164": 3,
+    "luaOrigin160EqualsRoster164": 433,
+    "candidateLoanDates": 179,
+    "candidateLoanLuaCurrent12cEqualsRoster164": 3,
+    "candidateLoanLuaOrigin160EqualsRoster164": 176
+  },
+  "evidenceLabels": {
+    "recordSize17c": "CONFIRMED_BY_CT_AND_DUMPS",
+    "salaryDateOffsets": "CANDIDATE_CT_SEMANTICS_STRONGLY_ML_POPULATED",
+    "marketOffset": "CONFIRMED_STABLE_BASE_VALUE_CANDIDATE_MARKET_SEMANTICS_SCALE_UNCONFIRMED",
+    "link164": "CANDIDATE_CURRENT_ML_ROSTER_RELATION",
+    "luaFixedCurrentOriginDirection": "REFUTED_AS_GENERAL_RULE",
+    "loanDate16c": "CANDIDATE_REQUIRES_UI_OR_KNOWN_LOAN_CONTROLS",
+    "teamAndLeagueCfgNames": "CANDIDATE_REFERENCE_ONLY"
+  },
+  "sessions": {
+    "edit": {
+      "process": {
+        "attachmentId": {
+          "value": "af779385-bfc1-4cbe-bdf4-f71d13dda17e"
+        },
+        "processId": 33136,
+        "processStartedAtUtc": "2026-09-02T15:57:10.722542+00:00",
+        "processName": "PES2021"
+      },
+      "profileId": "pes2021-player-edit-v1",
+      "profileVersion": "0.1.0-builtin",
+      "profileSha256": "",
+      "recordStride": 380,
+      "arenaBaseAddress": "0x7FF4D9E60010",
+      "arenaStopAddress": "0x7FF4DA93F4CC",
+      "anchorAddress": "0x7FF4DA02F210",
+      "anchorPlayerId": 58120,
+      "anchorPlayerNameFingerprint": "Piero Hincapié",
+      "validationSampleSha256": "5a5b6b3ab2c385f0c31bc7256b8eb02308fe28cb947088761a71aefdb361cc0c",
+      "validatedAtUtc": "2026-09-02T22:06:41.7642325+00:00",
+      "cacheDisposition": "DISCOVERED"
+    },
+    "ml": {
+      "process": {
+        "attachmentId": {
+          "value": "98071057-969b-4001-9375-05a0e61d5498"
+        },
+        "processId": 25604,
+        "processStartedAtUtc": "2026-09-02T22:16:31.5790898+00:00",
+        "processName": "PES2021"
+      },
+      "profileId": "pes2021-player-edit-v1",
+      "profileVersion": "0.1.0-builtin",
+      "profileSha256": "",
+      "recordStride": 380,
+      "arenaBaseAddress": "0x7FF4D9950010",
+      "arenaStopAddress": "0x7FF4DA42F4CC",
+      "anchorAddress": "0x7FF4D9950010",
+      "anchorPlayerId": 58120,
+      "anchorPlayerNameFingerprint": "Piero Hincapié",
+      "validationSampleSha256": "488033fe2f2b3550f3b313fcf840f8114d06376d6019c829655f831a2c71d363",
+      "validatedAtUtc": "2026-09-03T20:10:06.0002662+00:00",
+      "cacheDisposition": "PROVIDED_ADDRESS"
+    }
+  }
+}
