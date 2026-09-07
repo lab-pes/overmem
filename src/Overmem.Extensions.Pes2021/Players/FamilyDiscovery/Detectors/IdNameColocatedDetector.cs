@@ -52,7 +52,7 @@ public sealed class IdNameColocatedDetector
                                 fp.PlayerName,
                                 FamilyResultClass.IdNameColocated,
                                 70, // Score
-                                Array.Empty<string>(),
+                                new[] { "id_match", $"name_found_at_offset_{i - offset}" },
                                 true);
                         }
                     }

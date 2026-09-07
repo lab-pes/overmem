@@ -6,6 +6,7 @@ using Overmem.Application;
 using Overmem.Extensions.Pes2021.ClubRelations;
 using Overmem.Extensions.Pes2021.Fixtures;
 using Overmem.Extensions.Pes2021.Players;
+using Overmem.Extensions.Pes2021.Players.FamilyDiscovery;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
@@ -450,6 +451,49 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 scanAll.MinRegionSize,
                 stdout,
                 cancellationToken),
+            Pes2021DiscoverPlayerFamiliesCliCommand discoverFamilies => ExecuteFdsCommandAsync(discoverFamilies.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                return await fds.DiscoverFamiliesAsync(
+                    attachment.AttachmentId,
+                    BuildProcessIdentity(attachment),
+                    LoadPlayerProfile(discoverFamilies.ProfilePath),
+                    discoverFamilies.ControlPlayerId,
+                    discoverFamilies.Policy,
+                    discoverFamilies.MaxBytes,
+                    discoverFamilies.TimeoutMs,
+                    discoverFamilies.OutputMode,
+                    cancellationToken);
+            }, stdout, cancellationToken),
+            Pes2021InventoryPlayerHitsCliCommand inventoryHits => ExecuteFdsCommandAsync(inventoryHits.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                return await fds.InventoryHitsAsync(
+                    attachment.AttachmentId,
+                    BuildProcessIdentity(attachment),
+                    LoadPlayerProfile(inventoryHits.ProfilePath),
+                    inventoryHits.ControlPlayerId,
+                    inventoryHits.Policy,
+                    cancellationToken);
+            }, stdout, cancellationToken),
+            Pes2021ComparePlayerSessionsCliCommand compareSessions => ((Func<Task<int>>)(async () => 
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                var output = await fds.CompareSessionsAsync(new AttachmentId(Guid.Empty), compareSessions.BeforeCatalogPath, compareSessions.AfterCatalogPath, cancellationToken);
+                await stdout.WriteLineAsync(output);
+                return 0;
+            }))(),
+            Pes2021ExportFamilyCatalogCliCommand exportCatalogFds => ExecuteFdsCommandAsync(exportCatalogFds.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                return await fds.ExportCatalogAsync(
+                    attachment.AttachmentId,
+                    BuildProcessIdentity(attachment),
+                    LoadPlayerProfile(exportCatalogFds.ProfilePath),
+                    exportCatalogFds.ControlPlayerId,
+                    exportCatalogFds.OutputPath,
+                    cancellationToken);
+            }, stdout, cancellationToken),
             _ => null
         };
     }
@@ -532,6 +576,26 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
         {
             var result = await action(attachment);
             await stdout.WriteLineAsync(JsonSerializer.Serialize(result, JsonOptions));
+            return 0;
+        }
+        finally
+        {
+            await applicationService.DetachAsync(attachment.AttachmentId, cancellationToken);
+        }
+    }
+
+    private static async Task<int> ExecuteFdsCommandAsync(
+        ProcessSelector selector,
+        ProcessMemoryApplicationService applicationService,
+        Func<AttachmentInfo, Task<string>> action,
+        TextWriter stdout,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await applicationService.AttachAsync(selector, cancellationToken);
+        try
+        {
+            var result = await action(attachment);
+            await stdout.WriteLineAsync(result);
             return 0;
         }
         finally

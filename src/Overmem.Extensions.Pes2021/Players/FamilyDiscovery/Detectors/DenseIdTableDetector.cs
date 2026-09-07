@@ -29,7 +29,7 @@ public sealed class DenseIdTableDetector
             bool found = false;
             foreach (var fp in _fingerprints.Fingerprints)
             {
-                if ((fp.PlayerId & 0x00FFFFFF) == (possibleId & 0x00FFFFFF))
+                if (fp.PlayerId == possibleId)
                 {
                     found = true;
                     if (maxSequentialIds == 0)
@@ -59,7 +59,7 @@ public sealed class DenseIdTableDetector
                 firstName,
                 FamilyResultClass.DenseIdTable,
                 80 + (maxSequentialIds * 2), // Score scales with density
-                Array.Empty<string>(),
+                new[] { $"sequential_known_ids_{maxSequentialIds}" },
                 true);
         }
 

@@ -1,5 +1,11 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
+using System.Buffers.Binary;
 using Overmem.Abstractions;
+using Overmem.Abstractions.Processes;
+using Overmem.Abstractions.Memory;
 
 namespace Overmem.Extensions.Pes2021.Players.FamilyDiscovery;
 
@@ -14,11 +20,37 @@ public sealed class PointerFamilyScanner
         _gateway = gateway;
     }
 
-    public void ScanForPointers(DiscoveredFamily family)
+    public async Task<int> ScanForPointersAsync(AttachmentId attachmentId, DiscoveredFamily family, CancellationToken cancellationToken)
     {
-        // Implementation for scanning pointers to known family hits.
-        // Needs a full scan over memory looking for address values (x64 canonical).
-        // Max depth is 4. Max nodes is 10000.
-        // Requires multiple hits to confirm a relation.
+        var regions = await _gateway.ListRegionsAsync(attachmentId, cancellationToken);
+        var validRegions = regions.Where(r => r.IsReadable);
+        
+        var hitAddresses = new HashSet<ulong>(family.Hits.Select(h => h.Address));
+        if (hitAddresses.Count == 0) return 0;
+
+        var blockReader = new ResilientBlockReader(_gateway);
+        var budget = FamilyScanBudget.Unlimited;
+        int pointersFound = 0;
+
+        foreach (var region in validRegions)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var readResult = await blockReader.ReadRegionAsync(attachmentId, region.BaseAddress, region.BaseAddress + region.RegionSize, 1024 * 1024, budget, cancellationToken);
+            
+            foreach (var block in readResult.Blocks)
+            {
+                var span = block.Data.AsSpan();
+                for (int i = 0; i <= span.Length - 8; i += 8)
+                {
+                    ulong ptr = System.Buffers.Binary.BinaryPrimitives.ReadUInt64LittleEndian(span.Slice(i));
+                    if (hitAddresses.Contains(ptr))
+                    {
+                        pointersFound++;
+                    }
+                }
+            }
+        }
+        
+        return pointersFound;
     }
 }

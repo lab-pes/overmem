@@ -76,7 +76,7 @@ public static class FingerprintBuilder
     private static (byte[] Mask, IReadOnlyList<int> DynamicOffsets) BuildMask(Pes2021PlayerProfile profile)
     {
         var mask = new byte[profile.Stride];
-        var dynamicOffsets = new List<int>();
+        var dynamicOffsets = new HashSet<int>();
 
         // Por padrão, ignora tudo (0x00)
         Array.Fill(mask, (byte)0x00);
@@ -114,6 +114,8 @@ public static class FingerprintBuilder
             }
         }
 
-        return (mask, dynamicOffsets);
+        var sortedOffsets = new List<int>(dynamicOffsets);
+        sortedOffsets.Sort();
+        return (mask, sortedOffsets);
     }
 }

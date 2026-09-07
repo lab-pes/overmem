@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Overmem.Extensions.Pes2021.Players.FamilyDiscovery;
 
@@ -34,7 +36,7 @@ public sealed class FamilyClusteringEngine
                 ulong regionEnd = familyHits.Last().Address;
 
                 families.Add(new DiscoveredFamily(
-                    FamilyId: Guid.NewGuid().ToString("N"),
+                    FamilyId: BuildDeterministicFamilyId(regionBase, candidateStride, (int)rGroup.Key),
                     Class: group.Key,
                     RegionBase: regionBase,
                     RegionEnd: regionEnd,
@@ -54,5 +56,16 @@ public sealed class FamilyClusteringEngine
         }
 
         return families;
+    }
+
+    /// <summary>
+    /// Gera um FamilyId determinístico a partir de RegionBase, CandidateStride e CandidateResidue.
+    /// O mesmo trio sempre produz o mesmo ID, garantindo estabilidade entre sessões.
+    /// </summary>
+    private static string BuildDeterministicFamilyId(ulong regionBase, int stride, int residue)
+    {
+        var input = $"fds:{regionBase:X16}:{stride}:{residue}";
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(hash)[..32].ToLowerInvariant();
     }
 }

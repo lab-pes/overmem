@@ -25,13 +25,28 @@ public sealed class SessionComparator
         var newFams = new List<DiscoveredFamily>();
         var disappeared = new List<DiscoveredFamily>();
         var changes = new List<PlayerChange>();
+        var consumedBeforeIndices = new HashSet<int>();
 
         // Find persistent families (match by stride and structure, not necessarily address)
         foreach (var famAfter in after.Families)
         {
-            var matchedBefore = before.Families.FirstOrDefault(f => f.CandidateStride == famAfter.CandidateStride && f.Class == famAfter.Class);
-            if (matchedBefore != null)
+            int? matchedIndex = null;
+            for (var i = 0; i < before.Families.Count; i++)
             {
+                if (consumedBeforeIndices.Contains(i))
+                    continue;
+                var f = before.Families[i];
+                if (f.CandidateStride == famAfter.CandidateStride && f.Class == famAfter.Class)
+                {
+                    matchedIndex = i;
+                    break;
+                }
+            }
+
+            if (matchedIndex.HasValue)
+            {
+                var matchedBefore = before.Families[matchedIndex.Value];
+                consumedBeforeIndices.Add(matchedIndex.Value);
                 persistent.Add(famAfter);
                 
                 // Track player movements within persistent families
@@ -67,11 +82,11 @@ public sealed class SessionComparator
             }
         }
 
-        foreach (var famBefore in before.Families)
+        for (var i = 0; i < before.Families.Count; i++)
         {
-            if (!persistent.Any(f => f.CandidateStride == famBefore.CandidateStride && f.Class == famBefore.Class))
+            if (!consumedBeforeIndices.Contains(i))
             {
-                disappeared.Add(famBefore);
+                disappeared.Add(before.Families[i]);
             }
         }
 

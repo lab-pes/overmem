@@ -57,7 +57,7 @@ public sealed class FullRecordDetector
                         fp.PlayerName,
                         exactMatch ? FamilyResultClass.ExactRecordCopy : FamilyResultClass.MaskedRecordCopy,
                         100, // Score
-                        System.Array.Empty<string>(),
+                        new[] { exactMatch ? "exact_record_match" : "masked_record_match" },
                         true);
                 }
             }

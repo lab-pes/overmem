@@ -56,18 +56,28 @@ public static class StrideInferenceEngine
         }
 
         // Tenta encontrar o delta mais comum
-        // Um stride verdadeiro vai aparecer como múltiplos do delta também, mas por
-        // simplicidade vamos procurar deltas que aparecem (minControlsForPromotion - 1) vezes
+        // Um stride verdadeiro vai aparecer como múltiplos do delta também.
+        // Coleta deltas com frequência mínima e também seus divisores e múltiplos comuns.
         var candidateDeltas = deltas.Where(kvp => kvp.Value >= minControlsForPromotion - 1).Select(kvp => kvp.Key).ToList();
 
-        // Se não achar vizinhos exatos, tenta ver se todos os hits se alinham
-        // a algum divisor comum. Para o PES 2021, o default é 380.
-        // Vamos checar explicitamente o 380, e se não, 760, 190.
-        var targetStrides = new[] { 380, 760, 190 };
+        // Também testa divisores e múltiplos dos deltas encontrados (2x, 0.5x)
+        // para descobrir strides que são metade ou dobro de distâncias observadas.
+        var derivedStrides = new HashSet<int>();
+        foreach (var d in candidateDeltas)
+        {
+            derivedStrides.Add(d);
+            if (d % 2 == 0 && d / 2 > 0) derivedStrides.Add(d / 2);
+            derivedStrides.Add(d * 2);
+        }
+        // Adiciona todos os deltas observados (mesmo com frequência baixa) como candidatos
+        foreach (var d in deltas.Keys)
+        {
+            derivedStrides.Add(d);
+        }
 
         var strideScores = new Dictionary<int, (int Count, int Residue)>();
 
-        foreach (var stride in candidateDeltas.Concat(targetStrides).Distinct())
+        foreach (var stride in derivedStrides)
         {
             // Tenta ver qual resíduo é mais comum para este stride
             var residues = sortedHits.GroupBy(h => (int)(h.Address % (ulong)stride))

@@ -36,6 +36,8 @@ public sealed record FamilyDiscoveryDiagnostics(
     int RejectedHits,
     int FamiliesDiscovered,
     int AmbiguousFamilies,
+    int TotalPointersFound,
+    int TotalTeamRelationsFound,
     IReadOnlyDictionary<string, int> RejectionReasons,
     IReadOnlyDictionary<string, double> StageDurationMs,
     IReadOnlyList<FamilyRegionDiagnostic> Regions);

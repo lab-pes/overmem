@@ -71,21 +71,22 @@ public sealed class ResilientBlockReader
             if (success && data != null)
             {
                 // Leitura bem sucedida do bloco inteiro
+                if (data.Length < requestSize)
+                    pagesPartialRead++;
                 blocks.Add(new ResilientBlock(cursor, data));
                 cursor += (ulong)requestSize;
             }
             else
             {
                 // Falha na leitura do bloco inteiro.
-                // Verifica se o processo foi terminado tentando ler o primeiro byte de uma região conhecida
-                // ou apenas cai no modo de recuperação por página.
-                // Aqui vamos implementar a recuperação iterando página por página.
+                // Recuperação iterando página por página.
                 
                 var pageCursor = cursor;
                 var blockStop = cursor + (ulong)requestSize;
                 
                 byte[]? currentRecoveredBlock = null;
                 ulong currentRecoveredBlockStart = 0;
+                var consecutivePageFailures = 0;
 
                 while (pageCursor < blockStop)
                 {
@@ -96,6 +97,11 @@ public sealed class ResilientBlockReader
 
                     if (pageSuccess && pageData != null)
                     {
+                        consecutivePageFailures = 0;
+
+                        if (pageData.Length < pageRemaining)
+                            pagesPartialRead++;
+
                         if (currentRecoveredBlock == null)
                         {
                             currentRecoveredBlock = pageData;
@@ -114,6 +120,7 @@ public sealed class ResilientBlockReader
                     {
                         // Página falhou
                         pagesUnreadable++;
+                        consecutivePageFailures++;
                         
                         // Encerra o bloco recuperado atual se houver
                         if (currentRecoveredBlock != null)
@@ -122,9 +129,13 @@ public sealed class ResilientBlockReader
                             currentRecoveredBlock = null;
                         }
 
-                        // Detecção simples de término: se muitas páginas consecutivas falharem 
-                        // e for o início, assumiremos que o processo pode ter caído.
-                        // Mas para cumprir o contrato, basta logar as páginas.
+                        // Detecção de término: se 5+ páginas consecutivas falharem,
+                        // o processo provavelmente foi encerrado ou reiniciado.
+                        if (consecutivePageFailures >= 5)
+                        {
+                            processTerminated = true;
+                            goto Done;
+                        }
                     }
 
                     pageCursor += (ulong)pageRemaining;
@@ -141,6 +152,7 @@ public sealed class ResilientBlockReader
             }
         }
 
+Done:
         return new ResilientReadResult(startAddress, stopAddress, blocks, pagesUnreadable, pagesPartialRead, processTerminated);
     }
 
@@ -161,9 +173,8 @@ public sealed class ResilientBlockReader
         {
             throw;
         }
-        catch (Exception ex)
+        catch
         {
-            // Poderíamos checar se ex indica processo finalizado
             return (false, null);
         }
     }

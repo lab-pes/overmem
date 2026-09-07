@@ -5,6 +5,7 @@ using Overmem.Abstractions.Processes;
 using Overmem.Extensions.Pes2021.Fixtures;
 using Overmem.Extensions.Pes2021.Players;
 using Overmem.Runtime;
+using Overmem.Extensions.Pes2021.Players.FamilyDiscovery;
 
 namespace Overmem.Extensions.Pes2021.Tools;
 
@@ -12,6 +13,7 @@ namespace Overmem.Extensions.Pes2021.Tools;
 public sealed class Pes2021PlayerTools(
     Pes2021PlayerCatalogService catalogService,
     Pes2021PlayerQueryService queryService,
+    Pes2021FamilyDiscoveryService fdsService,
     IProcessMemoryGateway gateway,
     ISystemClock clock)
 {
@@ -64,44 +66,54 @@ public sealed class Pes2021PlayerTools(
     // --- Family Discovery System Tools ---
 
     [McpServerTool(Name = "pes2021_discover_player_families"), Description("Discover all player families using the multi-anchor FDS scanner.")]
-    public Task<string> DiscoverPlayerFamilies(
+    public async Task<string> DiscoverPlayerFamilies(
         [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("The control player ID to anchor on.")] uint controlPlayerId,
         [Description("Optional profile path.")] string? profilePath = null,
+        [Description("Optional process ID for identity propagation.")] int processId = 0,
         [Description("Region policy to use (DefaultPlayerArena, All, IncludeMapped, etc).")] string policy = "DefaultPlayerArena",
         [Description("Maximum bytes to read. 0 = unlimited.")] long maxBytes = 0,
         [Description("Timeout in milliseconds. 0 = unlimited.")] int timeoutMs = 0,
         [Description("Output mode (Summary, Compact, Full, Hits, Coverage).")] string outputMode = "Summary",
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+        var profile = string.IsNullOrWhiteSpace(profilePath) ? Pes2021PlayerProfileDefaults.GetOrLoad() : Pes2021PlayerProfileLoader.LoadFromFile(profilePath);
+        return await fdsService.DiscoverFamiliesAsync(new AttachmentId(attachmentId), new ProcessInstanceIdentity(new AttachmentId(attachmentId), processId, null, "PES2021"), profile, controlPlayerId, policy, maxBytes, timeoutMs, outputMode, cancellationToken);
     }
 
     [McpServerTool(Name = "pes2021_inventory_player_hits"), Description("Inventory all hits using the FDS scanner.")]
-    public Task<string> InventoryPlayerHits(
+    public async Task<string> InventoryPlayerHits(
         [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("The control player ID to anchor on.")] uint controlPlayerId,
         [Description("Optional profile path.")] string? profilePath = null,
+        [Description("Optional process ID for identity propagation.")] int processId = 0,
         [Description("Region policy to use.")] string policy = "DefaultPlayerArena",
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+        var profile = string.IsNullOrWhiteSpace(profilePath) ? Pes2021PlayerProfileDefaults.GetOrLoad() : Pes2021PlayerProfileLoader.LoadFromFile(profilePath);
+        return await fdsService.InventoryHitsAsync(new AttachmentId(attachmentId), new ProcessInstanceIdentity(new AttachmentId(attachmentId), processId, null, "PES2021"), profile, controlPlayerId, policy, cancellationToken);
     }
 
     [McpServerTool(Name = "pes2021_compare_player_sessions"), Description("Compare two FDS catalogs.")]
-    public Task<string> ComparePlayerSessions(
+    public async Task<string> ComparePlayerSessions(
+        [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
         [Description("Path to the before catalog.")] string beforeCatalogPath,
         [Description("Path to the after catalog.")] string afterCatalogPath,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+        return await fdsService.CompareSessionsAsync(new AttachmentId(attachmentId), beforeCatalogPath, afterCatalogPath, cancellationToken);
     }
 
     [McpServerTool(Name = "pes2021_export_family_catalog"), Description("Export the current FDS catalog to a specific path.")]
-    public Task<string> ExportFamilyCatalog(
+    public async Task<string> ExportFamilyCatalog(
         [Description("The attachment identifier returned by attach_process.")] Guid attachmentId,
+        [Description("The control player ID to anchor on.")] uint controlPlayerId,
         [Description("Path to save the catalog.")] string outputPath,
         [Description("Optional profile path.")] string? profilePath = null,
+        [Description("Optional process ID for identity propagation.")] int processId = 0,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult("Not implemented via MCP yet. Wait for Phase 10 completion.");
+        var profile = string.IsNullOrWhiteSpace(profilePath) ? Pes2021PlayerProfileDefaults.GetOrLoad() : Pes2021PlayerProfileLoader.LoadFromFile(profilePath);
+        return await fdsService.ExportCatalogAsync(new AttachmentId(attachmentId), new ProcessInstanceIdentity(new AttachmentId(attachmentId), processId, null, "PES2021"), profile, controlPlayerId, outputPath, cancellationToken);
     }
 }

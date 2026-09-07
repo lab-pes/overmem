@@ -21,6 +21,7 @@ public sealed record Pes2021FindCalendarBaseCliCommand(
 
 public sealed record Pes2021DiscoverPlayerFamiliesCliCommand(
     ProcessSelector Selector,
+    uint ControlPlayerId,
     string? ProfilePath,
     string Policy = "DefaultPlayerArena",
     long MaxBytes = 0,
@@ -29,6 +30,7 @@ public sealed record Pes2021DiscoverPlayerFamiliesCliCommand(
 
 public sealed record Pes2021InventoryPlayerHitsCliCommand(
     ProcessSelector Selector,
+    uint ControlPlayerId,
     string? ProfilePath,
     string Policy = "DefaultPlayerArena") : CliCommand;
 
@@ -38,6 +40,7 @@ public sealed record Pes2021ComparePlayerSessionsCliCommand(
 
 public sealed record Pes2021ExportFamilyCatalogCliCommand(
     ProcessSelector Selector,
+    uint ControlPlayerId,
     string OutputPath,
     string? ProfilePath) : CliCommand;
 

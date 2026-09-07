@@ -14,7 +14,7 @@ namespace Overmem.McpServer;
 
 public static class OvermemServiceCollectionExtensions
 {
-    public static IServiceCollection AddOvermemServices(this IServiceCollection services)
+    public static IServiceCollection AddOvermemServices(this IServiceCollection services, string transport = "stdio")
     {
         var taskStore = new InMemoryMcpTaskStore(
             pollInterval: TimeSpan.FromSeconds(1),
@@ -26,11 +26,21 @@ public static class OvermemServiceCollectionExtensions
         services.AddPes2021Extension();
         services.AddSingleton<IMcpTaskStore>(taskStore);
 
-        services.AddMcpServer(options =>
+        var serverBuilder = services.AddMcpServer(options =>
             {
                 options.TaskStore = taskStore;
-            })
-            .WithStdioServerTransport()
+            });
+            
+        if (transport == "sse")
+        {
+            serverBuilder.WithHttpTransport();
+        }
+        else
+        {
+            serverBuilder.WithStdioServerTransport();
+        }
+
+        serverBuilder
             .WithTools<FreezeTools>()
             .WithTools<ProcessTools>()
             .WithTools<MemoryTools>()

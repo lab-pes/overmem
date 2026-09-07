@@ -26,18 +26,23 @@ public sealed class FamilyCatalog
     {
         var tempPath = _catalogPath + ".tmp";
         
-        using var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
-        await JsonSerializer.SerializeAsync(stream, result, _options, cancellationToken);
-        
-        stream.Position = 0;
-        using var sha256 = SHA256.Create();
-        var hash = await sha256.ComputeHashAsync(stream, cancellationToken);
-        var hashString = Convert.ToHexString(hash);
-        
-        stream.Dispose();
+        // Escreve o resultado no arquivo temporário
+        await using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+        {
+            await JsonSerializer.SerializeAsync(stream, result, _options, cancellationToken);
+        }
+
+        // Calcula o SHA-256 após fechar o stream de escrita
+        string hashString;
+        await using (var readStream = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
+        {
+            using var sha256 = SHA256.Create();
+            var hash = await sha256.ComputeHashAsync(readStream, cancellationToken);
+            hashString = Convert.ToHexString(hash);
+        }
 
         File.Move(tempPath, _catalogPath, true);
-        File.WriteAllText(_catalogPath + ".sha256", hashString);
+        await File.WriteAllTextAsync(_catalogPath + ".sha256", hashString, cancellationToken);
     }
 
     public async Task<FamilyDiscoveryResult?> LoadAsync(CancellationToken cancellationToken)

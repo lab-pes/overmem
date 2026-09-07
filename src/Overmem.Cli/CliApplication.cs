@@ -92,6 +92,7 @@ public static class CliApplication
                         discoverPointers.BaseModuleName,
                         discoverPointers.RevalidateCandidates), cancellationToken);
                 }, stdout, cancellationToken),
+                ServeCliCommand serve => ExecuteServeCommandAsync(serve, stdout, cancellationToken),
                 _ => TryExecuteExtension(command, extensions, services, stdout, cancellationToken)
                      ?? throw new ArgumentOutOfRangeException(nameof(command), $"Unsupported command type '{command.GetType().Name}'.")
             });
@@ -139,6 +140,36 @@ public static class CliApplication
         {
             await applicationService.DetachAsync(attachment.AttachmentId, cancellationToken);
         }
+    }
+
+    private static async Task<int> ExecuteServeCommandAsync(ServeCliCommand command, TextWriter stdout, CancellationToken cancellationToken)
+    {
+        var exePath = System.IO.Path.Combine(AppContext.BaseDirectory, "Overmem.McpServer.exe");
+        if (!System.IO.File.Exists(exePath))
+        {
+            exePath = System.IO.Path.Combine(AppContext.BaseDirectory, "Overmem.McpServer");
+            if (!System.IO.File.Exists(exePath))
+            {
+                await stdout.WriteLineAsync($"Error: Could not find MCP Server executable at {exePath}");
+                return 1;
+            }
+        }
+
+        var process = new System.Diagnostics.Process
+        {
+            StartInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = $"{command.Transport} --urls \"http://localhost:{command.Port}\"",
+                UseShellExecute = false
+            }
+        };
+
+        await stdout.WriteLineAsync($"Starting MCP Server on port {command.Port} via {command.Transport} transport...");
+        process.Start();
+        
+        await process.WaitForExitAsync(cancellationToken);
+        return process.ExitCode;
     }
 
     internal static async Task<int> ExecuteAsync<T>(Func<Task<T>> action, TextWriter stdout)

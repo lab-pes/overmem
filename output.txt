@@ -1,0 +1,5 @@
+D:\git-lab-pes\overmem-melhorias\TestProject\TestProject.csproj(1,1): error MSB4067: O elemento <#text> abaixo do elemento <Project> não é reconhecido.
+D:\git-lab-pes\overmem-melhorias\TestProject\TestProject.csproj(1,1): error MSB4067: O elemento <#text> abaixo do elemento <Project> não é reconhecido.
+D:\git-lab-pes\overmem-melhorias\TestProject\TestProject.csproj(1,1): error MSB4067: O elemento <#text> abaixo do elemento <Project> não é reconhecido.
+D:\git-lab-pes\overmem-melhorias\TestProject\TestProject.csproj(1,1): error MSB4067: O elemento <#text> abaixo do elemento <Project> não é reconhecido.
+D:\git-lab-pes\overmem-melhorias\TestProject\TestProject.csproj(1,1): error MSB4067: O elemento <#text> abaixo do elemento <Project> não é reconhecido.

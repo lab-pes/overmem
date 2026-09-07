@@ -32,11 +32,14 @@ public sealed class MultiAnchorScanner
         IReadOnlyList<MemoryRegionInfo>? regions,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var allRegions = regions ?? await _gateway.ListRegionsAsync(attachmentId, cancellationToken);
         var (acceptedRegions, _) = RegionPolicyFilter.Filter(allRegions, policy);
         var regionDiagnostics = RegionPolicyFilter.BuildDiagnostics(allRegions, policy).ToList();
 
         var stride = profile.Stride;
+        var playerIdOffset = profile.RecordLayout.Fields.Single(f => f.Name == "playerId").Offset;
         var hits = new List<FamilyHit>();
         var seenAddresses = new HashSet<ulong>();
 
@@ -87,7 +90,7 @@ public sealed class MultiAnchorScanner
                 {
                     bytesRead += (ulong)buffer.Length;
                     var combined = Combine(previousTail, buffer);
-                    var newHits = ProcessChunk(combined, cursor, previousTail.Length, fingerprints, profile, seenAddresses);
+                    var newHits = ProcessChunk(combined, cursor, previousTail.Length, fingerprints, profile, playerIdOffset, seenAddresses);
                     hits.AddRange(newHits);
 
                     var overlapStart = Math.Max(0, combined.Length - overlap);
@@ -123,6 +126,8 @@ LimitReached:
             RejectedHits: rejectedHits,
             FamiliesDiscovered: 0, 
             AmbiguousFamilies: 0,
+            TotalPointersFound: 0,
+            TotalTeamRelationsFound: 0,
             RejectionReasons: new Dictionary<string, int>(),
             StageDurationMs: new Dictionary<string, double>(),
             Regions: regionDiagnostics);
@@ -136,6 +141,7 @@ LimitReached:
         int previousTailLength, 
         FingerprintSet set, 
         Pes2021PlayerProfile profile,
+        int playerIdOffset,
         HashSet<ulong> seenAddresses)
     {
         var newHits = new List<FamilyHit>();
@@ -144,7 +150,6 @@ LimitReached:
         if (chunk.Length < stride)
             return newHits;
 
-        var playerIdOffset = profile.RecordLayout.Fields.Single(f => f.Name == "playerId").Offset;
 
         // Itera por cada offset possível no chunk onde caiba um stride completo
         for (var offset = 0; offset <= chunk.Length - stride; offset++)

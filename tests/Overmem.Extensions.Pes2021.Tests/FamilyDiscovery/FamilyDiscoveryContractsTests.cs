@@ -157,6 +157,8 @@ public class FamilyDiscoveryContractsTests
             RejectedHits: 5,
             FamiliesDiscovered: 2,
             AmbiguousFamilies: 0,
+            TotalPointersFound: 100,
+            TotalTeamRelationsFound: 15,
             RejectionReasons: new Dictionary<string, int> { ["FDS_FALSE_POSITIVE_REFUTED"] = 5 },
             StageDurationMs: new Dictionary<string, double> { ["scan"] = 1500.0 },
             Regions: Array.Empty<FamilyRegionDiagnostic>());
