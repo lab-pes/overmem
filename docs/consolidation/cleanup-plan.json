@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "canonicalRepository": "D:\\git-lab-pes\\overmem",
+  "canonicalRemote": "https://github.com/lab-pes/overmem.git",
+  "requiredBranch": "master",
+  "requiredIntegrationCommit": "4a0b99b9784ea838dba9e6a7222b144f00283781",
+  "primaryVault": "D:\\git-lab-pes\\overmem\\artifacts\\consolidation-2026-09-12",
+  "secondaryVault": "D:\\Tools\\_backups\\lab-pes-overmem\\consolidation-2026-09-12",
+  "targets": [
+    { "source": "m3-overmem", "path": "D:\\git-lab-pes\\m3-overmem", "kind": "repository" },
+    { "source": "overmem-melhorias", "path": "D:\\git-lab-pes\\overmem-melhorias", "kind": "repository" },
+    { "source": "legacy-dgit", "path": "D:\\git\\overmem", "kind": "repository" },
+    { "source": "gearlabs", "path": "D:\\git\\gearlabs\\overmem", "kind": "nested-directory" },
+    { "source": "gearlabs-cleanup", "path": "D:\\git\\gearlabs-history-cleanup\\overmem", "kind": "nested-directory" },
+    { "source": "history-overmem-dgit", "path": "D:\\git\\history-docs\\_sources\\overmem-dgit", "kind": "nested-directory" },
+    { "source": "history-gearlabs", "path": "D:\\git\\history-docs\\_sources\\gearlabs\\overmem", "kind": "nested-directory" },
+    { "source": "history-gearlabs-cleanup", "path": "D:\\git\\history-docs\\_sources\\gearlabs-history-cleanup\\overmem", "kind": "nested-directory" },
+    { "source": "history-pes-tools", "path": "D:\\git\\history-docs\\_sources\\pes-tools\\_root\\overmem", "kind": "nested-directory" },
+    { "source": "codex-b25e", "path": "C:\\Users\\Willian\\.codex\\worktrees\\b25e\\overmem", "kind": "git-worktree" },
+    { "source": "opencode-sunny-mountain", "path": "C:\\Users\\Willian\\.local\\share\\opencode\\worktree\\4154ebd71a288b24c0b2107a640133f96b0e2733\\sunny-mountain", "kind": "git-worktree" }
+  ],
+  "activeConfigurationFiles": [
+    "C:\\Users\\Willian\\.codex\\config.toml",
+    "C:\\Users\\Willian\\.config\\opencode\\opencode.jsonc",
+    "C:\\Users\\Willian\\AppData\\Roaming\\Code\\User\\settings.json",
+    "C:\\Users\\Willian\\AppData\\Roaming\\Code\\User\\mcp.json"
+  ],
+  "historicalMetadataNotUsedAsConfiguration": [
+    "Codex conversation history and editor history may retain old paths.",
+    "Codex currently exposes a saved project entry for D:\\git\\overmem; remove that sidebar project entry immediately before filesystem cleanup if it is still present."
+  ]
+}

@@ -76,6 +76,8 @@ Os protótipos `test*.cs`, `test3.csproj` e `TestProject/` vieram da branch de m
 
 ## Antes de uma futura limpeza
 
-A aprovação para apagar diretórios é uma etapa posterior. Confirmar primeiro: integração aceita na branch principal; pasta canônica usando a revisão aprovada; verificador completo com `issues=[]`; cópia adicional do cofre local e bundles; migração das configurações que ainda apontam para outros diretórios. O checkout isolado `artifacts/consolidation-2026-09-12/candidate` mantém os resultados de build desta sessão e pode ser retirado depois com o procedimento normal de worktrees, preservando o cofre que o contém.
+A integração está na branch principal, a pasta canônica usa a revisão aprovada, o verificador retorna `issues=[]`, e uma segunda cópia do cofre e dos três bundles foi criada fora dos diretórios candidatos em `D:\Tools\_backups\lab-pes-overmem\consolidation-2026-09-12`. A referência operacional antiga foi removida de `C:\Users\Willian\.codex\config.toml`; históricos de conversa/editor foram mantidos como evidência.
+
+O [gate de limpeza](cleanup-readiness.md) e o [plano de alvos](cleanup-plan.json) tornam esses requisitos executáveis. O gate também bloqueia a operação se uma origem mudar depois do inventário. A aprovação para mover ou apagar diretórios continua sendo uma etapa posterior. O checkout isolado `artifacts/consolidation-2026-09-12/candidate` mantém os resultados de build desta sessão e pode ser retirado depois com o procedimento normal de worktrees, preservando o cofre que o contém.
 
 **Não apagar `artifacts/consolidation-2026-09-12` pensando que contém apenas arquivos regeneráveis. O GitHub sozinho não contém os 99 arquivos locais de evidência.**
