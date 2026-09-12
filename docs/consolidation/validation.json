@@ -53,11 +53,30 @@
     "tests-pes2021-final.log": "1a6d4fed50f98d3b60f19826a0fdd51b2d26695433cdb2332d5f03e9b2d67223",
     "test-results/core-final.trx": "ebf2c395a55a5f341c057ab1457677a49e121207663f65e23144205a9162ea62",
     "test-results/pes2021-final.trx": "b85345596ccf98887cfab1618eca68993bded4fbd877f8539471d2a788308e34",
-    "build-final.log": "9635ee6bcc235cb11a7267ba44017fbebf1424ad6908391b3aff911afb79cac4"
+    "build-final.log": "9635ee6bcc235cb11a7267ba44017fbebf1424ad6908391b3aff911afb79cac4",
+    "build-cleanup-readiness.log": "5045dff64f1dec67046b5dd7d6b12ed2ab7666b12b9c02406964868bdba160a1",
+    "tests-core-cleanup-readiness.log": "089580dbfa2ed27da20ad745f03ee2c47744e82237f5359885f8c6099d6b0aa6",
+    "tests-pes2021-cleanup-readiness.log": "41066f643b1fa9cf469291fc19b08958a7f34fb4631cd3e1d4c0d3f4fe00a1e7",
+    "publish-cleanup-readiness.log": "392f50fa97f03743c0eb05280df5647ad7d9e1d998892833700eeb2aed8940f3",
+    "test-results/core-cleanup-readiness.trx": "0eb5148a7c00e2ecc87aceed57ab0c7a1be6dd8607c425793e0f1c07749bc9a5",
+    "test-results/pes2021-cleanup-readiness.trx": "f0087fa448016fbccd133bb7452a87d4a68fa804dc2c11d72bf08850fbaa9461"
   },
   "testedGitSubtrees": {
     "src": "5edfebef8e171a41060253a0065d3a566549bf7e",
     "tests": "3cf5fab95a82608a10f36ed9eacf9e16e42841d8",
-    "scripts": "39d9a0b8bdf4bc475b5b014451360b0194fefcb9"
+    "scripts": "11ca01bad73e43c91628d7d7a40e1d3dbe81becf"
+  },
+  "cleanupReadiness": {
+    "primaryVault": "PASS: 2535/2535",
+    "secondaryVault": "PASS: 2535/2535",
+    "gitBundles": "PASS: 3 bundles in each vault",
+    "sourceSnapshots": "PASS: 2174 duplicate-source files unchanged",
+    "canonicalLocalEvidence": "PASS: 32 untracked files preserved by hash",
+    "activeConfigurations": "PASS: no duplicate paths",
+    "justInTimeAttestations": [
+      "remove the stale Codex sidebar project for D:\\git\\overmem if it is still shown",
+      "close every task, terminal and editor using a cleanup target"
+    ],
+    "deletionAuthorized": false
   }
 }
