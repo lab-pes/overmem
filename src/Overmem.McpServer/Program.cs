@@ -1,34 +1,36 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Overmem.McpServer;
 
-// Usage:
-//   Overmem.McpServer              -> MCP-over-stdio (full JSON-RPC tool surface)
-//   Overmem.McpServer --pipe <name> -> range-restricted pipe bridge for live A/B/A/B/C refinement
-
-var pipeMode = false;
-var pipeBase = "overmem";
-for (var i = 0; i < args.Length; i++)
+// Stdio remains the default. HTTP and the range-search pipe are explicit modes.
+if (args.Length > 0 && args[0] is "--pipe" or "--pipe-search")
 {
-    if (args[i] is "--pipe" or "--pipe-search" && i + 1 < args.Length)
-    {
-        pipeMode = true;
-        pipeBase = args[i + 1];
-        i++;
-    }
-}
-
-if (pipeMode)
-{
-    var inName = $"{pipeBase}.in";
-    var outName = $"{pipeBase}.out";
-    Console.Error.WriteLine($"[mcp] Pipe bridge (range-restricted). in=\\\\.\\pipe\\{inName} out=\\\\.\\pipe\\{outName}");
-    await Overmem.McpServer.PipeRunner.RunAsync(inName, outName);
+    if (args.Length != 2 || string.IsNullOrWhiteSpace(args[1]))
+        throw new ArgumentException("Usage: Overmem.McpServer --pipe <name>");
+    await PipeRunner.RunAsync($"{args[1]}.in", $"{args[1]}.out");
     return;
 }
 
-var builder = Host.CreateApplicationBuilder(args);
-builder.Logging.AddConsole(options => { options.LogToStandardErrorThreshold = LogLevel.Trace; });
-builder.Services.AddOvermemServices();
-await builder.Build().RunAsync();
+var transport = args.Length > 0 && args[0] is "stdio" or "sse" ? args[0] : "stdio";
+var hostArgs = args.Length > 0 && args[0] == transport ? args[1..] : args;
+if (transport == "sse")
+{
+    var builder = WebApplication.CreateBuilder(hostArgs);
+    if (string.IsNullOrEmpty(builder.Configuration["urls"]))
+        builder.WebHost.UseUrls("http://localhost:5000");
+    builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
+    builder.Services.AddOvermemServices(transport);
+    var app = builder.Build();
+    app.MapMcp("/sse");
+    await app.RunAsync();
+}
+else
+{
+    var builder = Host.CreateApplicationBuilder(hostArgs);
+    builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
+    builder.Services.AddOvermemServices();
+    await builder.Build().RunAsync();
+}

@@ -429,7 +429,9 @@ public static class Pes2021PlayerProfileLoader
             }
         }
 
-        return new Pes2021PlayerAnchorValidation(before, after, minRun, minScore, medium, high, controlIds);
+        var minControls = ReadInt32(anchor, "minimumControlsForStridePromotion") ?? 3;
+
+        return new Pes2021PlayerAnchorValidation(before, after, minRun, minScore, medium, high, minControls, controlIds);
     }
 
     private static Pes2021PlayerLimits ParseLimits(JsonElement limits)

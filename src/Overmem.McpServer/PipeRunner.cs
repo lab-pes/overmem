@@ -72,7 +72,7 @@ public sealed class Int32RangeSession
             var n = Math.Min(batchSize, addresses.Length - i);
             for (var j = 0; j < n; j++)
             {
-                var read = await gateway.ReadAsync(new ReadMemoryRequest(new AttachmentId(AttachmentId), addresses[i + j], MemoryValueKind.Int32, 4), ct);
+                var read = await gateway.ReadAsync(new ReadMemoryRequest(new AttachmentId(AttachmentId), addresses[i + j], MemoryValueKind.Bytes, 4), ct);
                 result[i + j] = BitConverter.ToInt32(Convert.FromHexString(read.Value));
             }
         }

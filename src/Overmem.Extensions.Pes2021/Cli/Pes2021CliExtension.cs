@@ -6,6 +6,7 @@ using Overmem.Application;
 using Overmem.Extensions.Pes2021.ClubRelations;
 using Overmem.Extensions.Pes2021.Fixtures;
 using Overmem.Extensions.Pes2021.Players;
+using Overmem.Extensions.Pes2021.Players.FamilyDiscovery;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
@@ -22,6 +23,27 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
     {
         return commandName switch
         {
+            "pes2021-discover-player-families" => new Pes2021DiscoverPlayerFamiliesCliCommand(
+                CliOptionParser.ParseSelector(options),
+                checked((uint)CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "control-player-id"))),
+                CliOptionParser.GetOptionalOption(options, "profile-file"),
+                CliOptionParser.GetOptionalOption(options, "policy") ?? "DefaultPlayerArena",
+                checked((long)CliOptionParser.ParseUnsignedLong(CliOptionParser.GetOptionalOption(options, "max-bytes") ?? "0")),
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "timeout-ms") ?? "0"),
+                CliOptionParser.GetOptionalOption(options, "output-mode") ?? "Summary"),
+            "pes2021-inventory-player-hits" => new Pes2021InventoryPlayerHitsCliCommand(
+                CliOptionParser.ParseSelector(options),
+                checked((uint)CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "control-player-id"))),
+                CliOptionParser.GetOptionalOption(options, "profile-file"),
+                CliOptionParser.GetOptionalOption(options, "policy") ?? "DefaultPlayerArena"),
+            "pes2021-compare-player-sessions" => new Pes2021ComparePlayerSessionsCliCommand(
+                CliOptionParser.GetRequiredOption(options, "before-catalog"),
+                CliOptionParser.GetRequiredOption(options, "after-catalog")),
+            "pes2021-export-family-catalog" => new Pes2021ExportFamilyCatalogCliCommand(
+                CliOptionParser.ParseSelector(options),
+                checked((uint)CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "control-player-id"))),
+                CliOptionParser.GetRequiredOption(options, "output-file"),
+                CliOptionParser.GetOptionalOption(options, "profile-file")),
             "pes2021-find-calendar-base" => new Pes2021FindCalendarBaseCliCommand(
                 CliOptionParser.ParseSelector(options),
                 CliOptionParser.ParseOptionalInt32(CliOptionParser.GetOptionalOption(options, "year")),
@@ -426,6 +448,49 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
                 Pes2021AtomicFileWriter.WriteJson(exportCatalog.OutputFile, export, JsonOptions);
                 return export;
             }, stdout, exportCatalog.OutputFile, cancellationToken),
+            Pes2021DiscoverPlayerFamiliesCliCommand discoverFamilies => ExecuteFdsCommandAsync(discoverFamilies.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                return await fds.DiscoverFamiliesAsync(
+                    attachment.AttachmentId,
+                    BuildProcessIdentity(attachment),
+                    LoadPlayerProfile(discoverFamilies.ProfilePath),
+                    discoverFamilies.ControlPlayerId,
+                    discoverFamilies.Policy,
+                    discoverFamilies.MaxBytes,
+                    discoverFamilies.TimeoutMs,
+                    discoverFamilies.OutputMode,
+                    cancellationToken);
+            }, stdout, cancellationToken),
+            Pes2021InventoryPlayerHitsCliCommand inventoryHits => ExecuteFdsCommandAsync(inventoryHits.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                return await fds.InventoryHitsAsync(
+                    attachment.AttachmentId,
+                    BuildProcessIdentity(attachment),
+                    LoadPlayerProfile(inventoryHits.ProfilePath),
+                    inventoryHits.ControlPlayerId,
+                    inventoryHits.Policy,
+                    cancellationToken);
+            }, stdout, cancellationToken),
+            Pes2021ComparePlayerSessionsCliCommand compareSessions => ((Func<Task<int>>)(async () => 
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                var output = await fds.CompareSessionsAsync(new AttachmentId(Guid.Empty), compareSessions.BeforeCatalogPath, compareSessions.AfterCatalogPath, cancellationToken);
+                await stdout.WriteLineAsync(output);
+                return 0;
+            }))(),
+            Pes2021ExportFamilyCatalogCliCommand exportCatalogFds => ExecuteFdsCommandAsync(exportCatalogFds.Selector, services.GetRequiredService<ProcessMemoryApplicationService>(), async attachment =>
+            {
+                var fds = services.GetRequiredService<Pes2021FamilyDiscoveryService>();
+                return await fds.ExportCatalogAsync(
+                    attachment.AttachmentId,
+                    BuildProcessIdentity(attachment),
+                    LoadPlayerProfile(exportCatalogFds.ProfilePath),
+                    exportCatalogFds.ControlPlayerId,
+                    exportCatalogFds.OutputPath,
+                    cancellationToken);
+            }, stdout, cancellationToken),
             _ => null
         };
     }
@@ -471,6 +536,10 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
     public IReadOnlyList<string> GetHelpLines()
     {
         return [
+            "  pes2021-discover-player-families --pid <id>|--name <process> --control-player-id <id> [--profile-file <path>] [--policy <name>] [--max-bytes <bytes>] [--timeout-ms <ms>] [--output-mode <mode>]",
+            "  pes2021-inventory-player-hits --pid <id>|--name <process> --control-player-id <id> [--profile-file <path>] [--policy <name>]",
+            "  pes2021-compare-player-sessions --before-catalog <file> --after-catalog <file>",
+            "  pes2021-export-family-catalog --pid <id>|--name <process> --control-player-id <id> --output-file <file> [--profile-file <path>]",
             "  pes2021-find-calendar-base --pid <id>|--name <process> --competition-code <code> [--year <yyyy>] [--month <mm>] [--day <dd>] [--round <value>] [--module-name <module>] [--max-results <count>]",
             "  pes2021-dump-calendar-date --pid <id>|--name <process> --year <yyyy> --month <mm> --day <dd> [--base-address <value>] [--max-records <count>]",
             "  pes2021-compare-calendar-dates --pid <id>|--name <process> --first-year <yyyy> --first-month <mm> --first-day <dd> --second-year <yyyy> --second-month <mm> --second-day <dd> [--base-address <value>] [--max-records <count>]",
@@ -508,6 +577,26 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
         {
             var result = await action(attachment);
             await stdout.WriteLineAsync(JsonSerializer.Serialize(result, JsonOptions));
+            return 0;
+        }
+        finally
+        {
+            await applicationService.DetachAsync(attachment.AttachmentId, cancellationToken);
+        }
+    }
+
+    private static async Task<int> ExecuteFdsCommandAsync(
+        ProcessSelector selector,
+        ProcessMemoryApplicationService applicationService,
+        Func<AttachmentInfo, Task<string>> action,
+        TextWriter stdout,
+        CancellationToken cancellationToken)
+    {
+        var attachment = await applicationService.AttachAsync(selector, cancellationToken);
+        try
+        {
+            var result = await action(attachment);
+            await stdout.WriteLineAsync(result);
             return 0;
         }
         finally
