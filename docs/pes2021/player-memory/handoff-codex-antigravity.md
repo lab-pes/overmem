@@ -1,5 +1,9 @@
 # Checkpoint e revezamento: Codex <-> Antigravity
 
+> **ATUALIZACAO OPERACIONAL 2026-09-02:** depois da refutacao do repasse M3, o Codex corrigiu P3/P5. Anchor, scan completo e query funcionaram ao vivo no PES sem ML: stride `0x17C`, 25.005 jogadores, 4.996 slots reservados, 30.001 totais e zero IDs duplicados. Uma segunda execucao em novo PID e novos enderecos repetiu exatamente a estrutura e os hashes de cinco registros de controle. Os comandos experimentais defeituosos foram removidos. Estado: `OPERATIONAL_READ_RESTART_VALIDATED`; falta apenas o subgate semantico de correlacao com a UI. Autoridade atual: `deliveries/P11/summary.md`, `deliveries/P11/restart-validation-2026-09-02.md` e `edit-operational-read-runbook.md`.
+
+> **LIMITE DE COBERTURA:** 100% dos bytes crus foram capturados, mas o perfil nomeia 226/380 bytes; 154 continuam sem modelagem. Nao afirmar conhecimento semantico total do jogador. Contratos/mercado aparecem preenchidos apenas numa fracao da base EDIT e vinculos de emprestimo ainda nao foram resolvidos. Ver `deliveries/P11/coverage-contract-analysis-2026-09-02.md`.
+
 Data do checkpoint: 2026-08-31  
 Repositorio: `D:\git-lab-pes\overmem`  
 Objetivo ativo: implementar primeiro o mapeamento de jogadores `EDIT_BASE`; Master League permanece separada e adiada  

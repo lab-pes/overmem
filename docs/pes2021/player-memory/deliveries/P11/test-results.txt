@@ -1,0 +1,21 @@
+Command: dotnet test Overmem.slnx --no-restore
+Date: 2026-09-02
+
+Overmem.Tests (net8.0): 62 passed, 0 failed, 0 skipped
+Overmem.Extensions.Pes2021.Tests (net10.0): 326 passed, 0 failed, 0 skipped
+Total: 388 passed, 0 failed, 0 skipped
+Compiler/analyzer warnings: 0
+
+Live read-only commands:
+- pes2021-find-player-anchor: exit 0, one candidate, high 16/16
+- pes2021-scan-players: exit 0, 25005 populated + 4996 reserved
+- pes2021-query-player --player-id 58120: exit 0, one non-ambiguous result
+
+Restart validation, new PID 25604:
+- addresses changed and no old address was reused
+- anchor rediscovered: one candidate, high 16/16
+- scan repeated: 25005 populated + 4996 reserved = 30001
+- duplicate IDs: 0; unaccounted slots: 0
+- five neighboring control records retained identical SHA-256 values
+
+No live write command was run.

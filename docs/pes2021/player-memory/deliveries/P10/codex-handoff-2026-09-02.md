@@ -1,5 +1,7 @@
 # Codex handoff - PES 2021 player-memory state (2026-09-02)
 
+> **REFUTADO PELA AUDITORIA CODEX:** as conclusoes de stride `0x46C94`, duas arenas e somente 61 jogadores estao incorretas. Este arquivo fica preservado como repasse original do M3, nao como autoridade tecnica. Leia `codex-review-2026-09-02.md` antes de usar qualquer afirmacao abaixo.
+
 ## TL;DR
 
 The PES 2021 player-memory stack is fully implemented (P0 to P10 except P6 live-read and P8 single-player write pilot) and **live-verified** against your running PES2021.exe (PID 33136). All 382 tests pass. **61 real players** decoded across two EDIT-base arenas. **Zero writes** to the live save. New stride discovered: **0x46C94 (289.940 bytes = 380 × 763)** — different from the feasibility-study value (380 bytes) because PES2021 SEASON UPDATE inserted a 762-byte padding per record.

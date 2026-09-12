@@ -17,6 +17,35 @@ public sealed record Pes2021FindCalendarBaseCliCommand(
     string? ModuleName,
     int MaxResults) : CliCommand;
 
+// --- Family Discovery System Commands ---
+
+public sealed record Pes2021DiscoverPlayerFamiliesCliCommand(
+    ProcessSelector Selector,
+    uint ControlPlayerId,
+    string? ProfilePath,
+    string Policy = "DefaultPlayerArena",
+    long MaxBytes = 0,
+    int TimeoutMs = 0,
+    string OutputMode = "Summary") : CliCommand;
+
+public sealed record Pes2021InventoryPlayerHitsCliCommand(
+    ProcessSelector Selector,
+    uint ControlPlayerId,
+    string? ProfilePath,
+    string Policy = "DefaultPlayerArena") : CliCommand;
+
+public sealed record Pes2021ComparePlayerSessionsCliCommand(
+    string BeforeCatalogPath,
+    string AfterCatalogPath) : CliCommand;
+
+public sealed record Pes2021ExportFamilyCatalogCliCommand(
+    ProcessSelector Selector,
+    uint ControlPlayerId,
+    string OutputPath,
+    string? ProfilePath) : CliCommand;
+
+// --- Calendar Commands ---
+
 public sealed record Pes2021DumpCalendarDateCliCommand(
     ProcessSelector Selector,
     int Year,
@@ -179,9 +208,9 @@ public sealed record Pes2021FindPlayerAnchorCliCommand(
 public sealed record Pes2021ScanPlayersCliCommand(
     ProcessSelector Selector,
     uint ControlPlayerId,
+    ulong? AnchorAddress,
     string? ProfileFile,
-    string? OutputFile,
-    int MaxRecords) : CliCommand;
+    string? OutputFile) : CliCommand;
 
 public sealed record Pes2021QueryPlayerCliCommand(
     ProcessSelector Selector,
@@ -193,16 +222,3 @@ public sealed record Pes2021ExportPlayerCatalogCliCommand(
     uint ControlPlayerId,
     string? ProfileFile,
     string OutputFile) : CliCommand;
-
-public sealed record Pes2021StrideScanPlayersCliCommand(
-    ProcessSelector Selector,
-    ulong StartAddress,
-    ulong StopAddress,
-    int Stride,
-    int MaxRecords) : CliCommand;
-
-public sealed record Pes2021ScanAllArenasCliCommand(
-    ProcessSelector Selector,
-    int Stride,
-    int MaxRecordsPerArena,
-    ulong MinRegionSize) : CliCommand;

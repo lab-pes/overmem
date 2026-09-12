@@ -53,6 +53,10 @@ coverage*.xml
 *.DotSettings.user
 BenchmarkDotNet.Artifacts/
 
+## Python tooling
+__pycache__/
+*.py[cod]
+
 ## OS
 .DS_Store
 Thumbs.db

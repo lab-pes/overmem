@@ -1,0 +1,30 @@
+P12 offline analyzer validation
+Date: 2026-09-02
+
+PASS Python 3.14.2 execution
+PASS dump player count = 25005
+PASS unique player IDs = 25005
+PASS decoded raw records = 25005
+PASS every raw record length = 380
+PASS every decoded record matches embedded SHA-256
+PASS restart common IDs = 25005
+PASS restart raw-record hash mismatches = 0
+PASS CT ptrPlayer entries = 128
+PASS CT player fields/bitfields = 127
+PASS CT boundary markers = 1
+PASS byte census rows = 380
+PASS byte census state sum = 380
+PASS golden corpus rows = 30
+PASS mandatory high-bit controls present
+
+Generated artifact SHA-256:
+d2ccc4ca6c07da5e9334eea9940d2732761201ad9e1258191741f8a11fd4fc26  ct-dump-matrix.csv
+d4232e18ed246464c1e36d8a613dd809f1e53fa0b567cfedca3222a08faf675d  golden-player-corpus.csv
+23424c556f82fcba9019e4cb60d32fe6f37ad23f710cae67bd1c8b25a8fb315a  record-byte-census.csv
+5c3a3c35506dbea93eef22d4db0d761447afb73968d02931adb5200810cc511a  ct-candidate-field-catalog.json
+7cecdc0af8b75641bfc88094ba1c6a38ae5ed19fee4213d81dca51df10964258  evidence.json
+
+Safety:
+PASS process attachments = 0
+PASS live memory reads = 0
+PASS live memory writes = 0

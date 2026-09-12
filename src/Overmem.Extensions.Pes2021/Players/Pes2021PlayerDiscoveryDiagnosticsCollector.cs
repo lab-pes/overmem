@@ -67,10 +67,13 @@ public sealed class Pes2021PlayerDiscoveryDiagnosticsCollector
     public void AddAmbiguousResolutions(int count) => _ambiguousResolutions += Math.Max(0, count);
 
     public void AddRejection(string reason)
+        => AddRejection(reason, 1);
+
+    public void AddRejection(string reason, int count)
     {
-        if (string.IsNullOrEmpty(reason)) return;
-        if (_rejectionReasons.TryGetValue(reason, out var current)) _rejectionReasons[reason] = current + 1;
-        else _rejectionReasons[reason] = 1;
+        if (string.IsNullOrEmpty(reason) || count <= 0) return;
+        if (_rejectionReasons.TryGetValue(reason, out var current)) _rejectionReasons[reason] = current + count;
+        else _rejectionReasons[reason] = count;
     }
 
     public void AddWarning(string warning)

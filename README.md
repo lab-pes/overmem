@@ -1,4 +1,8 @@
-# Overmem
+# Overmem — lab-pes
+
+Canonical repository: [lab-pes/overmem](https://github.com/lab-pes/overmem). The [consolidation report](docs/consolidation/README.md) records source origins, exact preservation, validation, and the requirements before retiring other local copies.
+
+The unified solution includes EDIT/ML player discovery, experimental family discovery, and MCP stdio/HTTP/pipe modes. Build a combined CLI/MCP distribution with `./scripts/Publish-Overmem.ps1`; run `--help` for the available commands. Production targets .NET 8; the PES test project requires the .NET 10 SDK.
 
 Overmem is a Windows-only .NET 8 process memory platform focused on headless operation. The current repository scope is the backend surface only: shared contracts, application services, a Win32 provider, a one-shot CLI, and a local stdio MCP server. UI work is intentionally out of scope for now.
 

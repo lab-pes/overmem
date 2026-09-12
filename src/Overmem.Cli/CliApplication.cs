@@ -92,6 +92,7 @@ public static class CliApplication
                         discoverPointers.BaseModuleName,
                         discoverPointers.RevalidateCandidates), cancellationToken);
                 }, stdout, cancellationToken),
+                ServeCliCommand serve => ExecuteServeCommandAsync(serve, stderr, cancellationToken),
                 _ => TryExecuteExtension(command, extensions, services, stdout, cancellationToken)
                      ?? throw new ArgumentOutOfRangeException(nameof(command), $"Unsupported command type '{command.GetType().Name}'.")
             });
@@ -141,6 +142,56 @@ public static class CliApplication
         }
     }
 
+    private static async Task<int> ExecuteServeCommandAsync(ServeCliCommand command, TextWriter stderr, CancellationToken cancellationToken)
+    {
+        if (command.Transport is not ("stdio" or "sse"))
+            throw new ArgumentException("Transport must be stdio or sse.");
+        if (command.Port is < 1 or > 65535)
+            throw new ArgumentOutOfRangeException(nameof(command.Port), "Port must be between 1 and 65535.");
+        var exePath = System.IO.Path.Combine(AppContext.BaseDirectory, "Overmem.McpServer.exe");
+        if (!System.IO.File.Exists(exePath))
+        {
+            exePath = System.IO.Path.Combine(AppContext.BaseDirectory, "Overmem.McpServer");
+            if (!System.IO.File.Exists(exePath))
+            {
+                await stderr.WriteLineAsync("MCP server executable is missing. Build the combined distribution with scripts/Publish-Overmem.ps1, or run the MCP server project directly.");
+                return 1;
+            }
+        }
+
+        using var process = new System.Diagnostics.Process
+        {
+            StartInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = exePath,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.StartInfo.ArgumentList.Add(command.Transport);
+        if (command.Transport == "sse")
+        {
+            process.StartInfo.ArgumentList.Add("--urls");
+            process.StartInfo.ArgumentList.Add($"http://localhost:{command.Port}");
+        }
+        await stderr.WriteLineAsync($"Starting MCP Server via {command.Transport} transport...");
+        process.Start();
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+            return process.ExitCode;
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync();
+            }
+        }
+    }
+
     internal static async Task<int> ExecuteAsync<T>(Func<Task<T>> action, TextWriter stdout)
     {
         var result = await action();
@@ -155,6 +206,7 @@ public static class CliApplication
             "Overmem CLI",
             "",
             "Commands:",
+            "  serve [--transport sse|stdio] [--port <port>] (combined distribution)",
             "  modules --pid <id>|--name <process>",
             "  regions --pid <id>|--name <process>",
             "  read --pid <id>|--name <process> --address <value> --value-kind <kind> [--size <bytes>]",

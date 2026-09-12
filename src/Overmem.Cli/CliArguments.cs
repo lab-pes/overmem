@@ -19,6 +19,7 @@ public sealed record SaveTableCliCommand(string SourceFilePath, string Destinati
 public sealed record RefreshTableCliCommand(ProcessSelector Selector, string FilePath) : CliCommand;
 public sealed record ScanValueCliCommand(ProcessSelector Selector, MemoryValueKind ValueKind, string Value, int Size, int Alignment, int MaxResults) : CliCommand;
 public sealed record DiscoverPointersCliCommand(ProcessSelector Selector, ulong TargetAddress, int MaxDepth, long MaxOffset, int Alignment, int MaxResults, string? BaseModuleName, bool RevalidateCandidates) : CliCommand;
+public sealed record ServeCliCommand(string Transport, int Port) : CliCommand;
 
 public static class CliArgumentParser
 {
@@ -45,8 +46,11 @@ public static class CliArgumentParser
                 CliOptionParser.ParseSelector(options),
                 CliOptionParser.ParseUnsignedLong(CliOptionParser.GetRequiredOption(options, "address")),
                 Enum.Parse<MemoryValueKind>(CliOptionParser.GetRequiredOption(options, "value-kind"), ignoreCase: true),
-                CliOptionParser.GetRequiredOption(options, "value"),
+                CliOptionParser.GetOptionalOption(options, "value") ?? string.Empty,
                 CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "size") ?? "0")),
+            "serve" => new ServeCliCommand(
+                CliOptionParser.GetOptionalOption(options, "transport") ?? "sse",
+                CliOptionParser.ParseInt32(CliOptionParser.GetOptionalOption(options, "port") ?? "5000")),
             "scan-pattern" => new ScanPatternCliCommand(
                 CliOptionParser.ParseSelector(options),
                 CliOptionParser.GetRequiredOption(options, "pattern"),
