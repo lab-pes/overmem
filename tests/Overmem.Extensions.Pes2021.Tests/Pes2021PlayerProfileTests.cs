@@ -326,6 +326,94 @@ public sealed class Pes2021PlayerProfileTests
         Assert.Equal(380, profile.Stride);
         Assert.False(string.IsNullOrEmpty(profile.Sha256));
         Assert.Equal(Pes2021PlayerEvidenceStatus.Candidate, profile.EvidenceStatus);
+        Assert.Equal(120, profile.RecordValidation.MinimumHeight);
+        Assert.Equal(220, profile.RecordValidation.MaximumHeight);
+        Assert.Equal(30, profile.RecordValidation.MinimumWeight);
+        Assert.Equal(160, profile.RecordValidation.MaximumWeight);
+        Assert.Equal(1u, profile.RecordValidation.MinimumPlayerId);
+        Assert.Equal(uint.MaxValue, profile.RecordValidation.MaximumPlayerId);
+    }
+
+    [Fact]
+    public void CanonicalEditProfileJson_LoadsAndMatchesProfileId()
+    {
+        var editProfilePath = ResolveRepoRelative(Path.Combine(
+            "files", "pes2021", "player-memory", "pes2021-player-edit-v1.json"));
+        Assert.True(File.Exists(editProfilePath), $"missing canonical edit profile at '{editProfilePath}'");
+
+        var profile = Pes2021PlayerProfileLoader.LoadFromFile(editProfilePath);
+        Assert.Equal("pes2021.player-record.v1", profile.SchemaVersion);
+        Assert.Equal("pes2021-player-edit-v1", profile.ProfileId);
+        Assert.Equal(380, profile.Stride);
+        Assert.False(string.IsNullOrEmpty(profile.Sha256));
+        Assert.Equal(Pes2021PlayerEvidenceStatus.Candidate, profile.EvidenceStatus);
+        Assert.Equal(120, profile.RecordValidation.MinimumHeight);
+        Assert.Equal(220, profile.RecordValidation.MaximumHeight);
+        Assert.Equal(30, profile.RecordValidation.MinimumWeight);
+        Assert.Equal(160, profile.RecordValidation.MaximumWeight);
+        Assert.Equal(1u, profile.RecordValidation.MinimumPlayerId);
+        Assert.Equal(uint.MaxValue, profile.RecordValidation.MaximumPlayerId);
+    }
+
+    [Fact]
+    public void RecordValidation_AcceptsAllObservedIdClasses()
+    {
+        var profile = Pes2021PlayerProfileDefaults.BuildBuiltIn();
+        var validation = profile.RecordValidation;
+
+        // Class 1: IDs below 300,000 (standard database)
+        var class1Ids = new uint[] { 296, 58120, 299999 };
+        foreach (var id in class1Ids)
+        {
+            Assert.InRange(id, validation.MinimumPlayerId, validation.MaximumPlayerId);
+        }
+
+        // Class 2: IDs 300,000..499,999 (extended database / custom)
+        var class2Ids = new uint[] { 300000, 350000, 499999 };
+        foreach (var id in class2Ids)
+        {
+            Assert.InRange(id, validation.MinimumPlayerId, validation.MaximumPlayerId);
+        }
+
+        // Class 3: IDs 500,000..0x3FFFFFFF
+        var class3Ids = new uint[] { 500000, 1000000, 0x3FFFFFFFu };
+        foreach (var id in class3Ids)
+        {
+            Assert.InRange(id, validation.MinimumPlayerId, validation.MaximumPlayerId);
+        }
+
+        // Class 4: 0x40000000 high-bit marked IDs (e.g. 0x400006E1 Lee Dong-gook)
+        var class4Ids = new uint[] { 0x40000001u, 0x400006E1u, 0x4FFFFFFFu };
+        foreach (var id in class4Ids)
+        {
+            Assert.InRange(id, validation.MinimumPlayerId, validation.MaximumPlayerId);
+        }
+
+        // Class 5: 0x80000000 high-bit marked IDs (e.g. 0x80000000 Humberto Suazo, 0x80000025 Humberto Osorio, 0x8000003E Franz Gonzales)
+        var class5Ids = new uint[] { 0x80000000u, 0x80000025u, 0x8000003Eu, 0x8FFFFFFFu };
+        foreach (var id in class5Ids)
+        {
+            Assert.InRange(id, validation.MinimumPlayerId, validation.MaximumPlayerId);
+        }
+
+        // Zero must not be allowed
+        Assert.True(0 < validation.MinimumPlayerId, "Player ID 0 must be rejected by minimumPlayerId = 1");
+    }
+
+    [Fact]
+    public void RecordValidation_AcceptsObservedHeightAndWeightRanges_IncludingExtremeRealPlayers()
+    {
+        var profile = Pes2021PlayerProfileDefaults.BuildBuiltIn();
+        var validation = profile.RecordValidation;
+
+        // Heights: 130 observed for Davor Zdravkovski and Victor Stina
+        Assert.InRange(130, (int)validation.MinimumHeight, (int)validation.MaximumHeight);
+        Assert.InRange(120, (int)validation.MinimumHeight, (int)validation.MaximumHeight);
+        Assert.InRange(220, (int)validation.MinimumHeight, (int)validation.MaximumHeight);
+
+        // Weights: 30..160
+        Assert.InRange(30, (int)validation.MinimumWeight, (int)validation.MaximumWeight);
+        Assert.InRange(160, (int)validation.MinimumWeight, (int)validation.MaximumWeight);
     }
 
     [Fact]

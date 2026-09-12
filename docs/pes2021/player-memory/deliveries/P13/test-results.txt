@@ -1,0 +1,22 @@
+P13 static audit and synthetic regression tests
+Date: 2026-09-02
+
+dotnet test Overmem.slnx --no-restore
+
+PASS Overmem.Tests: 62
+PASS Overmem.Extensions.Pes2021.Tests: 338
+PASS total: 400
+FAIL: 0
+
+New regression coverage:
+PASS overlapping blocks merge without shifting offsets
+PASS disagreeing overlap is rejected
+PASS gaps between blocks are rejected
+PASS composite identities sharing team_id are preserved
+PASS ambiguous composite catalog rows are not silently discarded
+PASS candidate addresses equal true regionBase + buffer offset
+
+Safety:
+PASS live scan not executed
+PASS process attachment not created
+PASS process writes = 0

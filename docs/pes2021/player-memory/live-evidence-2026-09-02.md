@@ -1,5 +1,7 @@
 # PES 2021 player-memory — live discovery evidence
 
+> **EVIDENCIA EXPERIMENTAL REFUTADA EM PARTE:** o stride 763 descrito abaixo foi uma subamostragem da grade real `0x17C`, nao um novo stride. Consulte `deliveries/P10/codex-review-2026-09-02.md`.
+
 Date: 2026-09-02
 PID: 33136
 Process name: PES2021

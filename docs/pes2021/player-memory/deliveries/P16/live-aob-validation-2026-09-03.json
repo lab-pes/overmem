@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "pes2021.player-memory.aob-validation.v1",
+  "capturedAtLocal": "2026-09-03T18:54:18-03:00",
+  "process": {
+    "name": "PES2021",
+    "pidHistorical": 25604,
+    "moduleBaseHistorical": "0x140000000",
+    "executableBytes": 453546496,
+    "executableSha256": "02AFA1B8601087C4163688FB015150B26568BD1031EE6752B16B902805DB2FC7"
+  },
+  "safety": {
+    "readOnly": true,
+    "memoryWrites": 0,
+    "ctExecuted": false,
+    "luaExecuted": false
+  },
+  "patterns": [
+    {
+      "source": "CT edit-player.lua primary AOB",
+      "pattern": "CB B8 02 00 00 00 0F 1F 40 00 66 0F 1F 84 00 00 00 00 00 0F 10 02 0F 11 01",
+      "matchesInModule": 1,
+      "matchAddressHistorical": "0x140C6ED2D",
+      "matchRva": "0xC6ED2D",
+      "ctInjectionRva": "0xC6ED40",
+      "luaInjectionRva": "0xC6ED46",
+      "status": "CONFIRMED_UNIQUE_THIS_EXECUTABLE_AND_SESSION"
+    },
+    {
+      "source": "WORLD Lua stable prefix",
+      "pattern": "CB B8 02 00 00 00 0F 1F 40 00 66 0F 1F 84 00 00 00 00 00",
+      "matchesInModule": 1,
+      "matchAddressHistorical": "0x140C6ED2D",
+      "matchRva": "0xC6ED2D",
+      "status": "CONFIRMED_UNIQUE_THIS_EXECUTABLE_AND_SESSION"
+    },
+    {
+      "source": "CT edit-player.lua secondary AOB",
+      "pattern": "48 8B 40 2C 48 89 02",
+      "matchesInModule": 1,
+      "matchAddressHistorical": "0x1408E24D7",
+      "matchRva": "0x8E24D7",
+      "status": "CONFIRMED_UNIQUE_THIS_EXECUTABLE_AND_SESSION"
+    }
+  ],
+  "historicalCommentAudit": {
+    "ctPrimaryCommentRva": "0xC650F0",
+    "ctSecondaryCommentRva": "0x730FFA7",
+    "status": "STALE_ADDRESSES_DO_NOT_REUSE",
+    "note": "The AOBs remain usable for discovery; the comments contain addresses from another executable layout."
+  }
+}

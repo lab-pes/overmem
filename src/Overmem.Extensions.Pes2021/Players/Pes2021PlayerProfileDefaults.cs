@@ -42,7 +42,13 @@ public static class Pes2021PlayerProfileDefaults
     {
         var candidates = new[]
         {
+            Path.Combine(AppContext.BaseDirectory, "profiles", "pes2021-player-edit-v1.json"),
+            Path.Combine(AppContext.BaseDirectory, "profiles", "pes2021-player-edit.json"),
+            Path.Combine(AppContext.BaseDirectory, "profiles", "pes2021-player-record-v1.json"),
             Path.Combine(AppContext.BaseDirectory, "profiles", "pes2021-player-record.json"),
+            Path.Combine(Environment.CurrentDirectory, "profiles", "pes2021-player-edit-v1.json"),
+            Path.Combine(Environment.CurrentDirectory, "profiles", "pes2021-player-edit.json"),
+            Path.Combine(Environment.CurrentDirectory, "profiles", "pes2021-player-record-v1.json"),
             Path.Combine(Environment.CurrentDirectory, "profiles", "pes2021-player-record.json"),
         };
 
@@ -92,7 +98,7 @@ public static class Pes2021PlayerProfileDefaults
                 new[] { Pes2021PlayerContext.EditBaseCandidate, Pes2021PlayerContext.EditBaseConfirmed,
                         Pes2021PlayerContext.MasterLeagueCandidate, Pes2021PlayerContext.MasterLeagueConfirmed },
                 false, null,
-                "Live structural confirmation. Duplicates exist; do not use alone for write targeting."),
+                "Live structural confirmation. Opaque u32 non-zero value. High-bit flags (0x40000000, 0x80000000) are structurally observed valid records; do not reject by small numeric ceiling. Duplicates exist; do not use alone for write targeting."),
             new("commentaryId", 52, 4, Pes2021PlayerFieldType.U32Le, "unsigned", "little",
                 Pes2021PlayerTransform.None,
                 Pes2021PlayerEvidenceStatus.Candidate,
@@ -308,12 +314,12 @@ public static class Pes2021PlayerProfileDefaults
 
         var layout = new Pes2021PlayerRecordLayout(Pes2021PlayerProfileLoader.ExpectedStride, 0, fields);
         var validation = new Pes2021PlayerRecordValidation(
-            MinimumHeight: 140,
+            MinimumHeight: 120,
             MaximumHeight: 220,
-            MinimumWeight: 40,
-            MaximumWeight: 130,
+            MinimumWeight: 30,
+            MaximumWeight: 160,
             MinimumPlayerId: 1,
-            MaximumPlayerId: 200_000);
+            MaximumPlayerId: uint.MaxValue);
         var regionFilter = new Pes2021PlayerRegionFilter(
             States: new[] { "Commit" },
             Types: new[] { "Private" },
