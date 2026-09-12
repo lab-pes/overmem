@@ -48,6 +48,7 @@ public static class OvermemServiceCollectionExtensions
             .WithTools<SearchTools>()
             .WithTools<TableTools>()
             .WithTools<Pes2021AgendaTools>(Pes2021FixtureJson.Options)
+            .WithTools<Pes2021LegacyCalendarTools>(Pes2021FixtureJson.Options)
             .WithTools<Pes2021PlayerTools>(Pes2021FixtureJson.Options);
 
         return services;

@@ -21,6 +21,19 @@ public sealed class Pes2021CliExtension : ICliCommandExtension
 {
     public CliCommand? TryParse(string commandName, IReadOnlyDictionary<string, string?> options)
     {
+        // Preserve the daily-calendar vocabulary used by the older gearlabs copy.
+        commandName = commandName switch
+        {
+            "pes2021-find-daily-calendar-base-by-date" => "pes2021-find-secondary-calendar-base-by-date",
+            "pes2021-dump-daily-calendar-day" => "pes2021-dump-secondary-calendar-day",
+            _ => commandName
+        };
+        if (!options.ContainsKey("secondary-base-address") && options.TryGetValue("daily-base-address", out var dailyAddress))
+        {
+            var compatibleOptions = new Dictionary<string, string?>(options, StringComparer.OrdinalIgnoreCase);
+            compatibleOptions["secondary-base-address"] = dailyAddress;
+            options = compatibleOptions;
+        }
         return commandName switch
         {
             "pes2021-discover-player-families" => new Pes2021DiscoverPlayerFamiliesCliCommand(

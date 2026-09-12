@@ -36,7 +36,9 @@ public sealed class McpToolDiscoveryTests
             foreach (var name in new[] { "attach_process", "pes2021_find_fixture_anchor",
                 "pes2021_extract_competition_fixtures", "pes2021_find_player_anchor", "pes2021_scan_players",
                 "pes2021_query_player", "pes2021_discover_player_families", "pes2021_inventory_player_hits",
-                "pes2021_compare_player_sessions", "pes2021_export_family_catalog" })
+                "pes2021_compare_player_sessions", "pes2021_export_family_catalog",
+                "pes2021_inspect_daily_calendar_candidate", "pes2021_scan_daily_calendar_candidates",
+                "pes2021_find_daily_calendar_base_by_date", "pes2021_dump_daily_calendar_day" })
                 Assert.Contains(name, names);
             Assert.Equal(names.Length, names.Distinct().Count());
         }

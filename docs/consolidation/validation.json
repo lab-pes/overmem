@@ -1,0 +1,63 @@
+{
+  "date": "2026-09-12",
+  "build": {
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 0
+  },
+  "tests": {
+    "core": {
+      "total": 83,
+      "executed": 83,
+      "passed": 83,
+      "failed": 0,
+      "notExecuted": 0
+    },
+    "pes2021": {
+      "total": 408,
+      "executed": 408,
+      "passed": 408,
+      "failed": 0,
+      "notExecuted": 0
+    }
+  },
+  "totalPassed": 491,
+  "distribution": {
+    "publish": "PASS",
+    "cliHelp": "PASS",
+    "cliServeHttpMcp": "PASS",
+    "listedMcpTools": 56,
+    "processAttachments": 0
+  },
+  "preservation": {
+    "sources": 12,
+    "expected": 2535,
+    "verified": 2535,
+    "archived": 2436,
+    "localEvidence": 99,
+    "missing": 0,
+    "unexpected": 0,
+    "divergent": 0,
+    "duplicate": 0
+  },
+  "sourceDriftBeforeCanonicalCheckout": [],
+  "runtimeScope": [
+    "unit tests and fake gateways",
+    "Overmem.TestTarget for controlled integration tests",
+    "new local MCP hosts only; no PES or Sider process started or attached"
+  ],
+  "logs": {
+    "build-initial.log": "4188cdc967ce63928c01586cb97c92d0e30c58896a2bb5876b0284ccb46e0414",
+    "publish.log": "74ced2d17cee1b8a39c78f22066f893e1cbd5d8e5c187843812bb87a60a58930",
+    "tests-core-final.log": "f60430b07a6bc792ba5a329d1e6c093e666592e6a72f448199ea6bd1169e41f8",
+    "tests-pes2021-final.log": "1a6d4fed50f98d3b60f19826a0fdd51b2d26695433cdb2332d5f03e9b2d67223",
+    "test-results/core-final.trx": "ebf2c395a55a5f341c057ab1457677a49e121207663f65e23144205a9162ea62",
+    "test-results/pes2021-final.trx": "b85345596ccf98887cfab1618eca68993bded4fbd877f8539471d2a788308e34",
+    "build-final.log": "9635ee6bcc235cb11a7267ba44017fbebf1424ad6908391b3aff911afb79cac4"
+  },
+  "testedGitSubtrees": {
+    "src": "5edfebef8e171a41060253a0065d3a566549bf7e",
+    "tests": "3cf5fab95a82608a10f36ed9eacf9e16e42841d8",
+    "scripts": "39d9a0b8bdf4bc475b5b014451360b0194fefcb9"
+  }
+}

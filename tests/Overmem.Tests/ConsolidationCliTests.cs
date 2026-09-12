@@ -8,6 +8,15 @@ public sealed class ConsolidationCliTests
 {
     private static readonly ICliCommandExtension[] Extensions = [new Pes2021CliExtension()];
 
+    [Theory]
+    [InlineData("pes2021-find-daily-calendar-base-by-date", typeof(Pes2021FindSecondaryCalendarBaseByDateCliCommand))]
+    [InlineData("pes2021-dump-daily-calendar-day", typeof(Pes2021DumpSecondaryCalendarDayCliCommand))]
+    public void LegacyDailyCalendarCommandNamesAreAccepted(string name, Type expected)
+    {
+        Assert.IsType(expected, CliArgumentParser.Parse(
+            [name, "--pid", "123", "--year", "2026", "--month", "1", "--day", "1"], Extensions));
+    }
+
     [Fact]
     public void FamilyDiscoveryIsReachableWithItsScanLimits()
     {
