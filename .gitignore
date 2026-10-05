@@ -60,3 +60,12 @@ __pycache__/
 ## OS
 .DS_Store
 Thumbs.db
+
+## PES 2021 player-memory — local working data (scans/dumps não versionados)
+files/pes2021/player-memory/live-*
+files/pes2021/player-memory/*.hex
+files/pes2021/player-memory/*.bin
+files/pes2021/player-memory/codex-live-*.json
+files/pes2021/player-memory/dump-all-arenas-small.json
+files/pes2021/player-memory/dump-players-*-raw.json
+files/pes2021/player-memory/codex-edit-ml-comparison-*/
